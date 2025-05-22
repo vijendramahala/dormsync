@@ -4,23 +4,23 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Visitor;
+use App\Models\Leaveapplication;
 use App\Models\Licence;
 use App\Models\Branch;
 use Illuminate\Support\Facades\Validator;
 
-class VisitorController extends Controller
+class LeaveapplicationController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $visitor = Visitor::with(['licence', 'branch'])->get();
+        $leave = Leaveapplication::with(['licence', 'branch'])->get();
 
      return response()->json([
         'status' => true,
-        'data' => $visitor
+        'data' => $leave
         ]);
     }
 
@@ -38,23 +38,23 @@ class VisitorController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'licence_no' => 'nullable|exists:licences,licence_no',
-            'branch_id' => 'nullable|exists:branches,id',
-            'hosteler_details' => 'nullable|string|max:1000',
-            'hosteler_id' => 'required',
-            'admission_date' => 'required|date',
-            'hosteler_name' => 'required|string|max:255',
-            'course_name' => 'required|string|max:255',
-            'father_name' => 'required|string|max:255',
-            'visiting_date' => 'required|date',
-            'visitor_name' => 'required|string|max:255',
-            'relation' => 'required|string|max:100',
-            'contact' => 'required|string|regex:/^[0-9]{10}$/',
-            'aadhar_no' => 'required|string|size:12|regex:/^[0-9]{12}$/',
-            'purpose_of_visit' => 'required|string|max:500',
-            'date_of_leave' => 'nullable|date|after_or_equal:visiting_date',
-            'visitor_document' => 'nullable|file|mimes:jpeg,png,pdf,docx|max:2048',
-            
+        'licence_no'        => 'nullable|exists:licences,licence_no',
+        'branch_id'         => 'nullable|exists:branches,id',
+        'hosteler_details'  => 'nullable|string|max:1000',
+        'hosteler_id'       => 'required',
+        'admission_date'    => 'required|date',
+        'hosteler_name'     => 'required|string|max:255',
+        'course_name'       => 'required|string|max:255',
+        'father_name'       => 'required|string|max:255',
+        'from_date'         => 'required|date',
+        'to_date'           => 'required|date|after_or_equal:from_date',
+        'accompained_by'    => 'nullable|string|max:255',
+        'relation'          => 'nullable|string|max:100',
+        'aadhar_no'         => 'required|string|size:12|regex:/^[0-9]{12}$/',
+        'contact'           => 'required|string|regex:/^[0-9]{10}$/',
+        'destination'       => 'required|string|max:255',
+        'purpose_of_leave'  => 'required|string|max:500',
+        'attachment'        => 'nullable|file|mimes:jpeg,png,pdf,docx|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -76,7 +76,7 @@ class VisitorController extends Controller
                 ], 422);
             }
             try{
-                $visitor = Visitor::create([
+                $leave = Leaveapplication::create([
                     'licence_no' => $request->licence_no,
                     'branch_id' => $request->branch_id,
                     'hosteler_details' => $request->hosteler_details,
@@ -85,26 +85,27 @@ class VisitorController extends Controller
                     'hosteler_name' => $request->hosteler_name,
                     'course_name' => $request->course_name,
                     'father_name' => $request->father_name,
-                    'visiting_date' => $request->visiting_date,
-                    'visitor_name' => $request->visitor_name,
+                    'from_date' => $request->from_date,
+                    'to_date' => $request->	to_date,
+                    'accompained_by' => $request->accompained_by,
                     'relation' => $request->relation,
-                    'contact' => $request->contact,
                     'aadhar_no' => $request->aadhar_no,
-                    'purpose_of_visit' => $request->purpose_of_visit,
-                    'date_of_leave' => $request->date_of_leave,
+                    'contact' => $request->contact,
+                    'destination' => $request->destination,
+                    'purpose_of_leave' => $request->purpose_of_leave
                 ]);
-                if ($request->hasFile('visitor_document') && $request->file('visitor_document')->isValid()) {
-                    $visitor->addMediaFromRequest('visitor_document')->toMediaCollection('visitor_document');
+                if ($request->hasFile('attachment') && $request->file('attachment')->isValid()) {
+                    $leave->addMediaFromRequest('attachment')->toMediaCollection('attachment');
                 }
-                
-                $visitor = $visitor->load(['licence', 'branch']);
+
+                $leave = $leave->load(['licence', 'branch']);
 
                 return response()->json([
-                'message' => 'visitor form added successfully',
-                'data' => $visitor
-            ], 201);
+                'message' => 'leave form added successfully',
+                'data' => $leave
+            ], 201);    
 
-            } catch (\Exception $e){
+            }catch (\Exception $e){
                 return response()->json([
                     'success' => false,
                     'message' => 'Something went wrong',
@@ -135,22 +136,23 @@ class VisitorController extends Controller
     public function update(Request $request, string $id)
     {
         $validator = Validator::make($request->all(), [
-            'licence_no' => 'nullable|exists:licences,licence_no',
-            'branch_id' => 'nullable|exists:branches,id',
-            'hosteler_details' => 'nullable|string|max:1000',
-            'hosteler_id' => 'required',
-            'admission_date' => 'required|date',
-            'hosteler_name' => 'required|string|max:255',
-            'course_name' => 'required|string|max:255',
-            'father_name' => 'required|string|max:255',
-            'visiting_date' => 'required|date',
-            'visitor_name' => 'required|string|max:255',
-            'relation' => 'required|string|max:100',
-            'contact' => 'required|string|regex:/^[0-9]{10}$/',
-            'aadhar_no' => 'required|string|size:12|regex:/^[0-9]{12}$/',
-            'purpose_of_visit' => 'required|string|max:500',
-            'date_of_leave' => 'nullable|date|after_or_equal:visiting_date',
-            'visitor_document' => 'nullable|file|mimes:jpeg,png,pdf,docx|max:2048',
+        'licence_no'        => 'nullable|exists:licences,licence_no',
+        'branch_id'         => 'nullable|exists:branches,id',
+        'hosteler_details'  => 'nullable|string|max:1000',
+        'hosteler_id'       => 'required',
+        'admission_date'    => 'required|date',
+        'hosteler_name'     => 'required|string|max:255',
+        'course_name'       => 'required|string|max:255',
+        'father_name'       => 'required|string|max:255',
+        'from_date'         => 'required|date',
+        'to_date'           => 'required|date|after_or_equal:from_date',
+        'accompained_by'    => 'nullable|string|max:255',
+        'relation'          => 'nullable|string|max:100',
+        'aadhar_no'         => 'required|string|size:12|regex:/^[0-9]{12}$/',
+        'contact'           => 'required|string|regex:/^[0-9]{10}$/',
+        'destination'       => 'required|string|max:255',
+        'purpose_of_leave'  => 'required|string|max:500',
+        'attachment'        => 'nullable|file|mimes:jpeg,png,pdf,docx|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -172,9 +174,9 @@ class VisitorController extends Controller
                 ], 422);
             }
             try{
-                $visitor = Visitor::findorFail($id);
+                $leave = Leaveapplication::findorFail($id);
 
-                $visitor->update([
+                $leave->update([
                     'licence_no' => $request->licence_no,
                     'branch_id' => $request->branch_id,
                     'hosteler_details' => $request->hosteler_details,
@@ -183,26 +185,28 @@ class VisitorController extends Controller
                     'hosteler_name' => $request->hosteler_name,
                     'course_name' => $request->course_name,
                     'father_name' => $request->father_name,
-                    'visiting_date' => $request->visiting_date,
-                    'visitor_name' => $request->visitor_name,
+                    'from_date' => $request->from_date,
+                    'to_date' => $request->	to_date,
+                    'accompained_by' => $request->accompained_by,
                     'relation' => $request->relation,
-                    'contact' => $request->contact,
                     'aadhar_no' => $request->aadhar_no,
-                    'purpose_of_visit' => $request->purpose_of_visit,
-                    'date_of_leave' => $request->date_of_leave,
+                    'contact' => $request->contact,
+                    'destination' => $request->destination,
+                    'purpose_of_leave' => $request->purpose_of_leave
                 ]);
-                if ($request->hasFile('visitor_document') && $request->file('visitor_document')->isValid()) {
-                    $visitor->clearMediaCollection('visitor_document');
-                $visitor->addMediaFromRequest('visitor_document')->toMediaCollection('visitor_document');
+                if ($request->hasFile('attachment') && $request->file('attachment')->isValid()) {
+                    $leave->clearMediaCollection('attachment');
+                $leave->addMediaFromRequest('attachment')->toMediaCollection('attachment');
                 }
 
-                $visitor = $visitor->load(['licence', 'branch']);
+                 $leave = $leave->load(['licence', 'branch']);
 
                 return response()->json([
                     'success' => true,
-                    'message' => 'visitor form update successsfully',
-                    'data' => $visitor
+                    'message' => 'leave form update successsfully',
+                    'data' => $leave
                 ]);
+
             } catch (\Exception $e) {
                 return response()->json([
                 'success' => false,
@@ -218,14 +222,14 @@ class VisitorController extends Controller
     public function destroy(string $id)
     {
         try{
-            $visitor = Visitor::findorFail($id);
+            $leave = Leaveapplication::findorFail($id);
 
-            $visitor->clearMediaCollection('visitor_document');
+            $leave->clearMediaCollection('attachment');
 
-            $visitor->delete();
+            $leave->delete();
 
             return response()->json([
-                'message' => 'visitor form deleted successfully',
+                'message' => 'leave form deleted successfully',
             ],200);
 
         } catch (\Exception $e) {

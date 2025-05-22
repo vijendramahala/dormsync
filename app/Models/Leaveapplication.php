@@ -7,11 +7,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\HasMedia;
 
-class Visitor extends Model implements HasMedia
+class Leaveapplication extends Model implements HasMedia
 {
     use HasFactory,InteractsWithMedia;
 
-    protected $table = 'visitors';
     protected $fillable = [
         'licence_no',
         'branch_id',
@@ -21,35 +20,24 @@ class Visitor extends Model implements HasMedia
         'hosteler_name',
         'course_name',
         'father_name',
-        'visiting_date',
-        'visitor_name',
+        'from_date',
+        'to_date',
+        'accompained_by',
         'relation',
-        'contact',
         'aadhar_no',
-        'purpose_of_visit',
-        'date_of_leave',
+        'contact',
+        'destination',
+        'purpose_of_leave',
     ];
 
-    //Update code
-    //git add .   - to add code to repo
-    //git commit -m"any name"   - to make path between repo and file
-    //git push     - Transfer code to repo
-
-    //Check code status
-    //git status    - to check transfer status
-    // git stash    -  to save data at another place and remove from file
-    // git stash pop  - t get back data
-
-    //Get code 
-    //git pull    - to get latest data from repo
-
+    // If you have date fields, Laravel can cast them automatically
     protected $casts = [
         'admission_date' => 'date',
-        'visiting_date' => 'date',
-        'date_of_leave' => 'datetime',
+        'from_date' => 'date',
+        'to_date' => 'date',
     ];
 
-     public function licence()
+    public function licence()
     {
         return $this->belongsTo(Licence::class, 'licence_no', 'licence_no');
     }
@@ -59,5 +47,4 @@ class Visitor extends Model implements HasMedia
         return $this->belongsTo(Branch::class, 'branch_id', 'id');
     }
 
-    
 }

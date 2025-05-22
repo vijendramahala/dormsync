@@ -13,6 +13,9 @@ use App\Http\Controllers\Api\UplodeprofileController;
 use App\Http\Controllers\Api\BuildingController;
 use App\Http\Controllers\Api\FloorController;
 use App\Http\Controllers\Api\RoomController;
+use App\Http\Controllers\Api\VisitorController;
+use App\Http\Controllers\Api\LeaveapplicationController;
+use App\Http\Controllers\Api\RoomassignController;
 // Public Routes
 Route::post('/login', [AuthController::class, 'superAdminLogin']);
 Route::post('/superadmin', [BranchController::class, 'superadmin']);
@@ -32,6 +35,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::resource('building',BuildingController::class);
     Route::resource('floor',FloorController::class);
     Route::resource('room',RoomController::class);
+    Route::resource('visitor',VisitorController::class);
+    Route::resource('leave',LeaveapplicationController::class);
+    Route::resource('roomassign',RoomassignController::class);
 
 });
 
