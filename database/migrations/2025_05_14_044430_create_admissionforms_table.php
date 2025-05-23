@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('licence_no');
             $table->integer('branch_id');
             $table->integer('ledger_id');
+            $table->date('admission_date');
             $table->string('image');
             $table->string('student_id');
             $table->string('student_name');
@@ -28,7 +29,7 @@ return new class extends Migration
             $table->string('email');
             $table->string('college_name');
             $table->string('course');
-            $table->date('date');
+            $table->date('date_of_birth');
             $table->string('year');
             $table->string('father_name');
             $table->string('mother_name');

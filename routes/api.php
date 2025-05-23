@@ -16,6 +16,8 @@ use App\Http\Controllers\Api\RoomController;
 use App\Http\Controllers\Api\VisitorController;
 use App\Http\Controllers\Api\LeaveapplicationController;
 use App\Http\Controllers\Api\RoomassignController;
+use App\Http\Controllers\Api\ProspectController;
+use App\Http\Controllers\Api\FeesentryController;
 // Public Routes
 Route::post('/login', [AuthController::class, 'superAdminLogin']);
 Route::post('/superadmin', [BranchController::class, 'superadmin']);
@@ -38,6 +40,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::resource('visitor',VisitorController::class);
     Route::resource('leave',LeaveapplicationController::class);
     Route::resource('roomassign',RoomassignController::class);
+    Route::resource('prospect',ProspectController::class);
+    Route::post('report',[ProspectController::class,'report']);
+    Route::post('createdAtReport',[ProspectController::class,'createdAtReport']);
+    Route::post('filterProspects',[ProspectController::class,'filterProspects']);
+    Route::resource('feesentry',FeesentryController::class);
 
 });
 

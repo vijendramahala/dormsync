@@ -31,18 +31,13 @@ class AdmissionformController extends Controller
     {
         //
     }
+    private function validation(){
 
-    /**
-     * Store a newly created resource in storage.
-     */
-   public function store(Request $request)
-{
-    
-    // Validate incoming request
-    $validator = Validator::make($request->all(), [
-        'licence_no' => 'exists:licences,licence_no',
+        return[
+       'licence_no' => 'exists:licences,licence_no',
         'branch_id' => 'exists:branches,id',
         'ledger_id' => 'nullable|integer|exists:ledgermaster,id',
+        'admission_date' => 'required|date',
         'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         'student_id' => 'required|string|max:50',
         'student_name' => 'required|string|max:255',
@@ -57,7 +52,7 @@ class AdmissionformController extends Controller
         'email' => 'required|email|max:255',
         'college_name' => 'required|string|max:255',
         'course' => 'required|string|max:100',
-        'date' => 'required|date',
+        'date_of_birth' => 'required|date',
         'year' => 'required|string|max:20',
         'father_name' => 'required|string|max:255',
         'mother_name' => 'required|string|max:255',
@@ -73,7 +68,17 @@ class AdmissionformController extends Controller
         'temporary_city' => 'nullable|string|max:100',
         'temporary_city_town' => 'nullable|string|max:100',
         'temporary_pin_code' => 'nullable|string|size:6',
-    ]);
+        ];
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+   public function store(Request $request)
+{
+    
+    // Validate incoming request
+    $validator = Validator::make($request->all(), $this->validation());
 
     if ($validator->fails()) {
         return response()->json(['errors' => $validator->errors()], 422);
@@ -102,6 +107,7 @@ class AdmissionformController extends Controller
             'licence_no' => $request->licence_no,
             'branch_id' => $request->branch_id,
             'ledger_id' => $request->ledger_id,
+            'admission_date' => $request->admission_date,
             'image' => $request->image, // Placeholder for image upload
             'student_id' => $request->student_id,
             'student_name' => $request->student_name,
@@ -116,7 +122,7 @@ class AdmissionformController extends Controller
             'email' => $request->email,
             'college_name' => $request->college_name,
             'course' => $request->course,
-            'date' => $request->date,
+            'date_of_birth' => $request->date_of_birth,
             'year' => $request->year,
             'father_name' => $request->father_name,
             'mother_name' => $request->mother_name,
@@ -199,42 +205,7 @@ class AdmissionformController extends Controller
      */
    public function update(Request $request, string $id)
 {
-    $validator = Validator::make($request->all(), [
-        'licence_no' => 'nullable|exists:licences,licence_no',
-        'branch_id' => 'nullable|exists:branches,id',
-        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        'student_id' => 'required|string|max:50',
-        'student_name' => 'required|string|max:255',
-        'gender' => 'required|string|in:male,female,other',
-        'marital_status' => 'required|string|in:single,married,divorced,widowed',
-        'aadhar_no' => 'required|string|size:12',
-        'upload_file' => 'nullable|array',
-        'upload_file.*' => 'file|max:2048',
-        'caste' => 'required|string|max:100',
-        'upload_file' => 'nullable|array',
-        'upload_file.*' => 'file|max:2048',
-        'primary_contact_no' => 'required|string|regex:/^[0-9]{10}$/',
-        'whatsapp_no' => 'nullable|string|regex:/^[0-9]{10}$/',
-        'email' => 'required|email|max:255',
-        'college_name' => 'required|string|max:255',
-        'course' => 'required|string|max:100',
-        'date' => 'required|date',
-        'year' => 'required|string|max:20',
-        'father_name' => 'required|string|max:255',
-        'mother_name' => 'required|string|max:255',
-        'guardian' => 'nullable|string|max:255',
-        'emergency_no' => 'required|string|regex:/^[0-9]{10}$/',
-        'permanent_address' => 'required|string|max:500',
-        'permanent_state' => 'required|string|max:100',
-        'permanent_city' => 'required|string|max:100',
-        'permanent_city_town' => 'required|string|max:100',
-        'permanent_pin_code' => 'required|string|size:6',
-        'temporary_address' => 'nullable|string|max:500',
-        'temporary_state' => 'nullable|string|max:100',
-        'temporary_city' => 'nullable|string|max:100',
-        'temporary_city_town' => 'nullable|string|max:100',
-        'temporary_pin_code' => 'nullable|string|size:6',
-    ]);
+    $validator = Validator::make($request->all(),$this->validation());
 
     if ($validator->fails()) {
         return response()->json(['errors' => $validator->errors()], 422);
@@ -260,6 +231,8 @@ class AdmissionformController extends Controller
         $admission->update($request->only([
             'licence_no',
             'branch_id',
+            'ledger_id',
+            'admission_date',
             'student_id',
             'student_name',
             'gender',
@@ -272,7 +245,7 @@ class AdmissionformController extends Controller
             'email',
             'college_name',
             'course',
-            'date',
+            'date_of_birth',
             'year',
             'father_name',
             'mother_name',

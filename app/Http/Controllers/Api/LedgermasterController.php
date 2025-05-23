@@ -128,7 +128,8 @@ if (!$branch) {
 
         // STEP 3: Admission Validation
         $admissionValidator = Validator::make($request->all(), [
-            'ledger_id' => 'required|integer|exists:ledgermaster,id',
+            // 'ledger_id' => 'required|integer|exists:ledgermaster,id',
+            'admission_date' => 'required|date',
             'student_id' => 'required|string|max:50',
             'student_name' => 'required|string|max:255',
             'gender' => 'required|string|in:male,female,other',
@@ -143,7 +144,7 @@ if (!$branch) {
             'email' => 'required|email|max:255',
             'college_name' => 'required|string|max:255',
             'course' => 'required|string|max:100',
-            'date' => 'required|date',
+            'date_of_birth' => 'required|date',
             'year' => 'required|string|max:20',
             'father_name' => 'required|string|max:255',
             'mother_name' => 'required|string|max:255',
@@ -170,6 +171,7 @@ if (!$branch) {
             'licence_no' => $ledger->licence_no,
             'branch_id' => $ledger->branch_id,
             'ledger_id' => $ledger->id,
+            'admission_date' => $request->admission_date,
             'student_id' => $request->student_id,
             'student_name' => $request->student_name,
             'image' => $request->image,
@@ -183,7 +185,7 @@ if (!$branch) {
             'email' => $request->email,
             'college_name' => $request->college_name,
             'course' => $request->course,
-            'date' => $request->date,
+            'date_of_birth' => $request->date_of_birth,
             'year' => $request->year,
             'father_name' => $request->father_name,
             'mother_name' => $request->mother_name,
@@ -253,171 +255,194 @@ if (!$branch) {
     /**
      * Update the specified resource in storage.
      */
-   public function update(Request $request, string $id)
-{
-    // STEP 1: Ledger Validation
-    $ledgerValidator = Validator::make($request->all(), [
-        'licence_no' => 'required|string|exists:licences,licence_no',
-        'branch_id' => 'required|integer|exists:branches,id',
-        'title' => 'required|string|max:100',
-        'ledger_name' => 'required|string|max:255',
-        'relation_type' => 'required|in:S/O,D/O,W/O',
-        'name' => 'required|string|max:255',
-        'contact_no' => 'nullable|string|regex:/^[0-9]{10}$/',
-        'whatsapp_no' => 'nullable|string|regex:/^[0-9]{10}$/',
-        'email' => 'nullable|email|max:255',
-        'ledger_file' => 'nullable|array',
-        'ledger_file.*' => 'file|max:2048',
-        'ledger_group' => 'required|string|max:255',
-        'opening_balance' => 'required|numeric|min:0',
-        'opening_type' => 'required|in:cr,br',
-        'gst_no' => 'nullable|string|max:15',
-        'aadhar_no' => 'nullable|string|digits:12',
-        'l_docu_uplode' => 'nullable|max:2048',
-        'permanent_address' => 'nullable|string|max:500',
-        'state' => 'required|string|max:100',
-        'city' => 'required|string|max:100',
-        'city_town_village' => 'nullable|string|max:100',
-        'address' => 'nullable|string|max:500',
-        'pin_code' => 'nullable|string|digits:6',
-        'temporary_address' => 'nullable|string|max:500',
-    ]);
-
-    if ($ledgerValidator->fails()) {
-        return response()->json(['errors' => $ledgerValidator->errors()->first()], 422);
-    }
-
-    // ✅ STEP 1.1: Licence and Branch Belonging Check
-    $licence = Licence::where('licence_no', $request->licence_no)->first();
-    if (!$licence) {
-        return response()->json(['error' => 'Invalid licence.'], 404);
-    }
-
-    $branch = Branch::where('id', $request->branch_id)
-                    ->where('licence_no', $licence->licence_no)
-                    ->first();
-
-    if (!$branch) {
-        return response()->json(['error' => 'The selected branch does not belong to the given licence.'], 422);
-    }
-
-    try {
-        $ledger = Ledgermaster::findOrFail($id);
-
-        $ledger->update($request->only([
-            'licence_no',
-            'branch_id',
-            'title',
-            'ledger_name',
-            'relation_type',
-            'name',
-            'contact_no',
-            'whatsapp_no',
-            'email',
-            'ledger_group',
-            'opening_balance',
-            'opening_type',
-            'gst_no',
-            'aadhar_no',
-            'permanent_address',
-            'state',
-            'city',
-            'city_town_village',
-            'address',
-            'pin_code',
-            'temporary_address',
-        ]));
-
-        // Media handling
-        if ($request->hasFile('ledger_file')) {
-            $ledger->clearMediaCollection('ledger_file');
-            foreach ($request->file('ledger_file') as $file) {
-                if ($file->isValid()) {
-                    $ledger->addMedia($file)->toMediaCollection('ledger_file');
-                }
-            }
-        }
-
-        if ($request->hasFile('l_docu_uplode')) {
-            $ledger->clearMediaCollection('l_docu_uplode');
-            $ledger->addMediaFromRequest('l_docu_uplode')->toMediaCollection('l_docu_uplode');
-        }
-
-        // STEP 2: Admission Validation
-        $admissionValidator = Validator::make($request->all(), [
-            'student_id' => 'required|string|max:50',
-            'student_name' => 'required|string|max:255',
-            'gender' => 'required|string|in:male,female,other',
-            'marital_status' => 'required|string|in:single,married,divorced,widowed',
-            'aadhar_no' => 'required|string|size:12',
-            'upload_file' => 'nullable|array',
-            'upload_file.*' => 'file|max:2048',
-            'image' => 'nullable|file|mimes:jpeg,png|max:2048',
-            'caste' => 'required|string|max:100',
-            'primary_contact_no' => 'required|string|regex:/^[0-9]{10}$/',
+  public function update(Request $request, string $id)
+    {
+        // STEP 1: Validate Ledger Data
+        $ledgerValidator = Validator::make($request->all(), [
+            'licence_no' => 'required|string|exists:licences,licence_no',
+            'branch_id' => 'required|integer|exists:branches,id',
+            'title' => 'required|string|max:100',
+            'ledger_name' => 'required|string|max:255',
+            'relation_type' => 'required|in:S/O,D/O,W/O',
+            'name' => 'required|string|max:255',
+            'contact_no' => 'nullable|string|regex:/^[0-9]{10}$/',
             'whatsapp_no' => 'nullable|string|regex:/^[0-9]{10}$/',
-            'email' => 'required|email|max:255',
-            'college_name' => 'required|string|max:255',
-            'course' => 'required|string|max:100',
-            'date' => 'required|date',
-            'year' => 'required|string|max:20',
-            'father_name' => 'required|string|max:255',
-            'mother_name' => 'required|string|max:255',
-            'guardian' => 'nullable|string|max:255',
-            'emergency_no' => 'required|string|regex:/^[0-9]{10}$/',
-            'permanent_address' => 'required|string|max:500',
-            'permanent_state' => 'required|string|max:100',
-            'permanent_city' => 'required|string|max:100',
-            'permanent_city_town' => 'required|string|max:100',
-            'permanent_pin_code' => 'required|string|size:6',
+            'email' => 'nullable|email|max:255',
+            'ledger_file' => 'nullable|array',
+            'ledger_file.*' => 'file|max:2048',
+            'ledger_group' => 'required|string|max:255',
+            'opening_balance' => 'required|numeric|min:0',
+            'opening_type' => 'required|in:cr,br',
+            'gst_no' => 'nullable|string|max:15',
+            'aadhar_no' => 'nullable|string|digits:12',
+            'l_docu_uplode' => 'nullable|file|max:2048',
+            'permanent_address' => 'nullable|string|max:500',
+            'state' => 'required|string|max:100',
+            'city' => 'required|string|max:100',
+            'city_town_village' => 'nullable|string|max:100',
+            'address' => 'nullable|string|max:500',
+            'pin_code' => 'nullable|string|digits:6',
             'temporary_address' => 'nullable|string|max:500',
-            'temporary_state' => 'nullable|string|max:100',
-            'temporary_city' => 'nullable|string|max:100',
-            'temporary_city_town' => 'nullable|string|max:100',
-            'temporary_pin_code' => 'nullable|string|size:6',
         ]);
 
-        if ($admissionValidator->fails()) {
-            return response()->json(['errors' => $admissionValidator->errors()], 422);
+        if ($ledgerValidator->fails()) {
+            return response()->json(['errors' => $ledgerValidator->errors()->first()], 422);
         }
 
-        $admission = Admissionform::where('ledger_id', $ledger->id)->firstOrFail();
+        // STEP 1.1: Licence and Branch Validation
+        $licence = Licence::where('licence_no', $request->licence_no)->first();
+        $branch = Branch::where('id', $request->branch_id)->where('licence_no', $licence->licence_no)->first();
 
-        $admission->update($request->except(['ledger_id', 'image', 'upload_file']));
-
-        if ($request->hasFile('image')) {
-            $admission->clearMediaCollection('image');
-            $admission->addMediaFromRequest('image')->toMediaCollection('image');
+        if (!$licence || !$branch) {
+            return response()->json(['error' => 'Invalid licence or branch.'], 422);
         }
 
-        if ($request->hasFile('upload_file')) {
-            $admission->clearMediaCollection('upload_file');
-            foreach ($request->file('upload_file') as $file) {
-                if ($file->isValid()) {
-                    $admission->addMedia($file)->toMediaCollection('upload_file');
+        try {
+            $ledger = Ledgermaster::findOrFail($id);
+
+            $ledger->update($request->only([
+                'licence_no',
+                'branch_id',
+                'title',
+                'ledger_name',
+                'relation_type',
+                'name',
+                'contact_no',
+                'whatsapp_no',
+                'email',
+                'ledger_group',
+                'opening_balance',
+                'opening_type',
+                'gst_no',
+                'aadhar_no',
+                'permanent_address',
+                'state',
+                'city',
+                'city_town_village',
+                'address',
+                'pin_code',
+                'temporary_address',
+            ]));
+
+            // Handle ledger file uploads
+            if ($request->hasFile('ledger_file')) {
+                $ledger->clearMediaCollection('ledger_file');
+                foreach ($request->file('ledger_file') as $file) {
+                    if ($file->isValid()) {
+                        $ledger->addMedia($file)->toMediaCollection('ledger_file');
+                    }
                 }
             }
+
+            if ($request->hasFile('l_docu_uplode')) {
+                $ledger->clearMediaCollection('l_docu_uplode');
+                $ledger->addMediaFromRequest('l_docu_uplode')->toMediaCollection('l_docu_uplode');
+            }
+
+            // STEP 2: Admission Validation
+            $admissionValidator = Validator::make($request->all(), [
+                'admission_date' => 'required|date',
+                'student_id' => 'required|string|max:50',
+                'student_name' => 'required|string|max:255',
+                'gender' => 'required|string|in:male,female,other',
+                'marital_status' => 'required|string|in:single,married,divorced,widowed',
+                'aadhar_no' => 'required|string|size:12',
+                'upload_file' => 'nullable|array',
+                'upload_file.*' => 'file|max:2048',
+                'image' => 'nullable|file|mimes:jpeg,png|max:2048',
+                'caste' => 'required|string|max:100',
+                'primary_contact_no' => 'required|string|regex:/^[0-9]{10}$/',
+                'whatsapp_no' => 'nullable|string|regex:/^[0-9]{10}$/',
+                'email' => 'required|email|max:255',
+                'college_name' => 'required|string|max:255',
+                'course' => 'required|string|max:100',
+                'date_of_birth' => 'required|date',
+                'year' => 'required|string|max:20',
+                'father_name' => 'required|string|max:255',
+                'mother_name' => 'required|string|max:255',
+                'guardian' => 'nullable|string|max:255',
+                'emergency_no' => 'required|string|regex:/^[0-9]{10}$/',
+                'permanent_address' => 'required|string|max:500',
+                'permanent_state' => 'required|string|max:100',
+                'permanent_city' => 'required|string|max:100',
+                'permanent_city_town' => 'required|string|max:100',
+                'permanent_pin_code' => 'required|string|size:6',
+                'temporary_address' => 'nullable|string|max:500',
+                'temporary_state' => 'nullable|string|max:100',
+                'temporary_city' => 'nullable|string|max:100',
+                'temporary_city_town' => 'nullable|string|max:100',
+                'temporary_pin_code' => 'nullable|string|size:6',
+            ]);
+
+            if ($admissionValidator->fails()) {
+                return response()->json(['errors' => $admissionValidator->errors()], 422);
+            }
+
+            $admission = Admissionform::where('ledger_id', $ledger->id)->firstOrFail();
+
+            $admission->update($request->only([
+                'admission_date',
+                'student_id',
+                'student_name',
+                'gender',
+                'marital_status',
+                'aadhar_no',
+                'caste',
+                'primary_contact_no',
+                'whatsapp_no',
+                'email',
+                'college_name',
+                'course',
+                'date_of_birth',
+                'year',
+                'father_name',
+                'mother_name',
+                'guardian',
+                'emergency_no',
+                'permanent_address',
+                'permanent_state',
+                'permanent_city',
+                'permanent_city_town',
+                'permanent_pin_code',
+                'temporary_address',
+                'temporary_state',
+                'temporary_city',
+                'temporary_city_town',
+                'temporary_pin_code',
+            ]));
+
+            if ($request->hasFile('image')) {
+                $admission->clearMediaCollection('image');
+                $admission->addMediaFromRequest('image')->toMediaCollection('image');
+            }
+
+            if ($request->hasFile('upload_file')) {
+                $admission->clearMediaCollection('upload_file');
+                foreach ($request->file('upload_file') as $file) {
+                    if ($file->isValid()) {
+                        $admission->addMedia($file)->toMediaCollection('upload_file');
+                    }
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Ledger and admission updated successfully',
+                'data' => [
+                    'ledger' => $ledger->load(['licence', 'branch']),
+                    'admission' => $admission
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        $ledger = $ledger->load(['licence', 'branch']);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Ledger and admission updated successfully',
-            'data' => [
-                'ledger' => $ledger,
-                'admission' => $admission
-            ]
-        ]);
-
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Something went wrong',
-            'error' => $e->getMessage()
-        ], 500);
     }
-}
+
 
     /**
      * Remove the specified resource from storage.
