@@ -21,12 +21,10 @@ return new class extends Migration
             $table->string('hosteler_name');
             $table->string('course_name');
             $table->string('father_name');
-            $table->string('room_type');
-            $table->integer('r_total_fees');
-            $table->string('mess_facility');
-            $table->integer('m_total_fees');
+            $table->json('fees_structure')->nullable();
+            $table->string('total_amount');
             $table->integer('discount');
-            $table->integer('total_amount');
+            $table->integer('total_remaining');
             $table->integer('EMI_recived')->default(0);
             $table->integer('EMI_total')->default(1);
             $table->timestamps();

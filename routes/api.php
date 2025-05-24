@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\LeaveapplicationController;
 use App\Http\Controllers\Api\RoomassignController;
 use App\Http\Controllers\Api\ProspectController;
 use App\Http\Controllers\Api\FeesentryController;
+use App\Http\Controllers\TryController;
 // Public Routes
 Route::post('/login', [AuthController::class, 'superAdminLogin']);
 Route::post('/superadmin', [BranchController::class, 'superadmin']);
@@ -45,8 +46,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('createdAtReport',[ProspectController::class,'createdAtReport']);
     Route::post('filterProspects',[ProspectController::class,'filterProspects']);
     Route::resource('feesentry',FeesentryController::class);
-
+    Route::get('getCombinedData',[FeesentryController::class,'getCombinedData']);
+    Route::get('/hosteler/data/{licence_no}', [FeesentryController::class, 'getCombinedData']);
+    
+    
 });
+Route::get('/show-content', [TryController::class, 'showContent']);
 
 // Authenticated User Info Route
 Route::get('/user', function (Request $request) {

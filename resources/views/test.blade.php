@@ -8,6 +8,5 @@
 </head>
 <body>
     <h1>only test<br>
-        {{ url('url', ['']) }}</h1>
 </body>
 </html>
