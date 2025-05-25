@@ -58,6 +58,10 @@ class Visitor extends Model implements HasMedia
     {
         return $this->belongsTo(Branch::class, 'branch_id', 'id');
     }
+    public function student()
+    {
+        return $this->belongsTo(Admissionform::class, 'hosteler_id', 'student_id');
+    }
 
     
 }

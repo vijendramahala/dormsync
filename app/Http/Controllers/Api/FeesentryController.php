@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Feesentry;
 use App\Models\Licence;
 use App\Models\Branch;
+use App\Models\Admissionform;
 use App\Models\Roomassign;
 use Illuminate\Support\Facades\Validator;
 
@@ -17,7 +18,7 @@ class FeesentryController extends Controller
      */
     public function index()
     {
-        $fees = Feesentry::with(['licence', 'branch'])->get();
+        $fees = Feesentry::with(['licence', 'branch','student'])->get();
 
      return response()->json([
         'status' => true,
@@ -77,6 +78,10 @@ class FeesentryController extends Controller
                 'error' => 'The selected branch does not belong to the provided licence_no.'
             ], 422);
         }
+        $admission = Admissionform::where('student_id', $request->hosteler_id)->first();
+            if (!$admission) {
+                return response()->json(['error' => 'Invalid hosteler id.'], 404);
+            }
 
         try {
             // Decode fees_structure if it's a string
@@ -115,7 +120,7 @@ class FeesentryController extends Controller
                 'EMI_total' => $request->EMI_total ?? 1,
             ]);
 
-            $fees = $fees->load(['licence', 'branch']);
+            $fees = $fees->load(['licence', 'branch','student']);
 
             return response()->json([
                 'message' => 'Fees Entry added successfully',
@@ -174,6 +179,10 @@ class FeesentryController extends Controller
                     'error' => 'The selected branch does not belong to the provided licence_no.'
                 ], 422);
             }
+            $admission = Admissionform::where('student_id', $request->hosteler_id)->first();
+            if (!$admission) {
+                return response()->json(['error' => 'Invalid hosteler id.'], 404);
+            }
             try {
 
                 $fees = Feesentry::findorFail($id);
@@ -213,7 +222,7 @@ class FeesentryController extends Controller
                     'EMI_recived' => $request->EMI_recived ?? 0,
                     'EMI_total' => $request->EMI_total ?? 1,
                 ]);
-                $fees = $fees->load(['licence', 'branch']);
+                $fees = $fees->load(['licence', 'branch','student']);
 
                  return response()->json([
                     'success' => true,

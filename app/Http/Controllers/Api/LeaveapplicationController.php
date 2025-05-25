@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Leaveapplication;
 use App\Models\Licence;
 use App\Models\Branch;
+use App\Models\Admissionform;
 use Illuminate\Support\Facades\Validator;
 
 class LeaveapplicationController extends Controller
@@ -16,7 +17,7 @@ class LeaveapplicationController extends Controller
      */
     public function index()
     {
-        $leave = Leaveapplication::with(['licence', 'branch'])->get();
+        $leave = Leaveapplication::with(['licence', 'branch','student'])->get();
 
      return response()->json([
         'status' => true,
@@ -75,6 +76,10 @@ class LeaveapplicationController extends Controller
                     'error' => 'The selected branch does not belong to the provided licence_no.'
                 ], 422);
             }
+            $admission = Admissionform::where('student_id', $request->hosteler_id)->first();
+            if (!$admission) {
+                return response()->json(['error' => 'Invalid hosteler id.'], 404);
+            }
             try{
                 $leave = Leaveapplication::create([
                     'licence_no' => $request->licence_no,
@@ -98,7 +103,7 @@ class LeaveapplicationController extends Controller
                     $leave->addMediaFromRequest('attachment')->toMediaCollection('attachment');
                 }
 
-                $leave = $leave->load(['licence', 'branch']);
+                $leave = $leave->load(['licence', 'branch','student']);
 
                 return response()->json([
                 'message' => 'leave form added successfully',
@@ -173,6 +178,10 @@ class LeaveapplicationController extends Controller
                     'error' => 'The selected branch does not belong to the provided licence_no.'
                 ], 422);
             }
+            $admission = Admissionform::where('student_id', $request->hosteler_id)->first();
+            if (!$admission) {
+                return response()->json(['error' => 'Invalid hosteler id.'], 404);
+            }
             try{
                 $leave = Leaveapplication::findorFail($id);
 
@@ -199,7 +208,7 @@ class LeaveapplicationController extends Controller
                 $leave->addMediaFromRequest('attachment')->toMediaCollection('attachment');
                 }
 
-                 $leave = $leave->load(['licence', 'branch']);
+                 $leave = $leave->load(['licence', 'branch','student']);
 
                 return response()->json([
                     'success' => true,

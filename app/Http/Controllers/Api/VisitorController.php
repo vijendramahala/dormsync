@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Visitor;
 use App\Models\Licence;
 use App\Models\Branch;
+use App\Models\Admissionform;
 use Illuminate\Support\Facades\Validator;
 
 class VisitorController extends Controller
@@ -16,7 +17,7 @@ class VisitorController extends Controller
      */
     public function index()
     {
-        $visitor = Visitor::with(['licence', 'branch'])->get();
+        $visitor = Visitor::with(['licence', 'branch','student'])->get();
 
      return response()->json([
         'status' => true,
@@ -75,6 +76,10 @@ class VisitorController extends Controller
                     'error' => 'The selected branch does not belong to the provided licence_no.'
                 ], 422);
             }
+             $admission = Admissionform::where('student_id', $request->hosteler_id)->first();
+            if (!$admission) {
+                return response()->json(['error' => 'Invalid hosteler id.'], 404);
+            }
             try{
                 $visitor = Visitor::create([
                     'licence_no' => $request->licence_no,
@@ -97,7 +102,7 @@ class VisitorController extends Controller
                     $visitor->addMediaFromRequest('visitor_document')->toMediaCollection('visitor_document');
                 }
                 
-                $visitor = $visitor->load(['licence', 'branch']);
+                $visitor = $visitor->load(['licence', 'branch','student']);
 
                 return response()->json([
                 'message' => 'visitor form added successfully',
@@ -171,6 +176,10 @@ class VisitorController extends Controller
                     'error' => 'The selected branch does not belong to the provided licence_no.'
                 ], 422);
             }
+            $admission = Admissionform::where('student_id', $request->hosteler_id)->first();
+            if (!$admission) {
+                return response()->json(['error' => 'Invalid hosteler id.'], 404);
+            }
             try{
                 $visitor = Visitor::findorFail($id);
 
@@ -196,7 +205,7 @@ class VisitorController extends Controller
                 $visitor->addMediaFromRequest('visitor_document')->toMediaCollection('visitor_document');
                 }
 
-                $visitor = $visitor->load(['licence', 'branch']);
+                $visitor = $visitor->load(['licence', 'branch','student']);
 
                 return response()->json([
                     'success' => true,

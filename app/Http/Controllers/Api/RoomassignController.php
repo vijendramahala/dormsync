@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Roomassign;
 use App\Models\Licence;
 use App\Models\Branch;
+use App\Models\Admissionform;
 use Illuminate\Support\Facades\Validator;
 
 class RoomassignController extends Controller
@@ -16,7 +17,7 @@ class RoomassignController extends Controller
      */
     public function index()
     {
-        $room = Roomassign::with(['licence', 'branch'])->get();
+        $room = Roomassign::with(['licence', 'branch','student'])->get();
 
      return response()->json([
         'status' => true,
@@ -71,6 +72,10 @@ class RoomassignController extends Controller
                     'error' => 'The selected branch does not belong to the provided licence_no.'
                 ], 422);
             }
+            $admission = Admissionform::where('student_id', $request->hosteler_id)->first();
+            if (!$admission) {
+                return response()->json(['error' => 'Invalid hosteler id.'], 404);
+            }
             try{
                 $room = Roomassign::create([
                     'licence_no' => $request->licence_no,
@@ -87,7 +92,7 @@ class RoomassignController extends Controller
                     'room_no' => $request->room_no,
                     'room_beds' => $request->room_beds
                 ]);
-                $room = $room->load(['licence', 'branch']);
+                $room = $room->load(['licence', 'branch','student']);
 
                 return response()->json([
                 'message' => 'Room Assign added successfully',
@@ -158,6 +163,10 @@ class RoomassignController extends Controller
                     'error' => 'The selected branch does not belong to the provided licence_no.'
                 ], 422);
             }
+            $admission = Admissionform::where('student_id', $request->hosteler_id)->first();
+            if (!$admission) {
+                return response()->json(['error' => 'Invalid hosteler id.'], 404);
+            }
             try{
                 $room = Roomassign::findorFail($id);
 
@@ -176,7 +185,7 @@ class RoomassignController extends Controller
                     'room_no' => $request->room_no,
                     'room_beds' => $request->room_beds
                 ]);
-                 $room = $room->load(['licence', 'branch']);
+                 $room = $room->load(['licence', 'branch','student']);
 
                  return response()->json([
                     'success' => true,
