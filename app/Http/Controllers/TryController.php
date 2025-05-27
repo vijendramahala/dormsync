@@ -14,7 +14,7 @@ class TryController extends Controller
             'message' => 'This content is not stored in database.',
             'status' => true
         ];
-
+        
         return response()->json($data);
     }
 }

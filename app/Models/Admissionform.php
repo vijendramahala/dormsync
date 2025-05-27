@@ -15,7 +15,6 @@ class Admissionform extends Model implements HasMedia
     protected $fillable = [
         'licence_no',
         'branch_id',
-        'ledger_id',
         'admission_date',
         'image',
         'student_id',

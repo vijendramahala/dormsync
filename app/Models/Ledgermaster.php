@@ -17,6 +17,7 @@ class Ledgermaster extends Model implements HasMedia
         protected $fillable = [
         'licence_no',
         'branch_id',
+        'student_id',
         'title',
         'ledger_name',
         'relation_type',
@@ -33,18 +34,19 @@ class Ledgermaster extends Model implements HasMedia
         'state',
         'city',
         'city_town_village',
-        'address',
         'pin_code',
         'temporary_address',
         ];
 
 
-        public function licence()
-        {
-            return $this->belongsTo(Licence::class);
-        }
-        public function branch()
-        {
-            return $this->belongsTo(Branch::class);
-        }
+            public function licence()
+    {
+        return $this->belongsTo(Licence::class, 'licence_no', 'licence_no');
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id', 'id');
+    }
+
 }

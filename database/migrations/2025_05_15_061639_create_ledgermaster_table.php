@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('licence_no');
             $table->unsignedBigInteger('branch_id');
+            $table->integer('student_id')->nullable();
             $table->string('title');
             $table->string('ledger_name');
             $table->string('relation_type');
@@ -31,9 +32,8 @@ return new class extends Migration
             $table->string('state');
             $table->string('city');
             $table->string('city_town_village')->nullable();
-            $table->string('address')->nullable();
             $table->string('pin_code', 10)->nullable();
-            $table->string('temporary_address')->nullable();
+            $table->string('temporary_address')->nullable();    
             $table->timestamps();
         });
     }

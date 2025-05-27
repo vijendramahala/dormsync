@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\Admissionform;
 use App\Models\Licence;
 use App\Models\Branch;
+use App\Models\Ledgermaster;
 
 class AdmissionformController extends Controller
 {
@@ -36,7 +37,6 @@ class AdmissionformController extends Controller
         return[
        'licence_no' => 'exists:licences,licence_no',
         'branch_id' => 'exists:branches,id',
-        'ledger_id' => 'nullable|integer|exists:ledgermaster,id',
         'admission_date' => 'required|date',
         'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         'student_id' => 'required|string|max:50',
@@ -68,6 +68,26 @@ class AdmissionformController extends Controller
         'temporary_city' => 'nullable|string|max:100',
         'temporary_city_town' => 'nullable|string|max:100',
         'temporary_pin_code' => 'nullable|string|size:6',
+        ];
+    }
+    private function lager(){
+        return [
+            'licence_no' => 'required|string|exists:licences,licence_no',
+            'branch_id' => 'required|integer|exists:branches,id',
+            'title' => 'required|string|max:100',
+            'relation_type' => 'required|in:S/O,D/O,W/O',
+            'ledger_file' => 'nullable|array',
+            'ledger_file.*' => 'file|max:2048',
+            'contact_no' => 'nullable|string|regex:/^[0-9]{10}$/',
+            'whatsapp_no' => 'nullable|string|regex:/^[0-9]{10}$/',
+            'email' => 'nullable|email|max:255',
+            'ledger_group' => 'required|string|max:255',
+            'opening_balance' => 'required|numeric|min:0',
+            'opening_type' => 'required|in:cr,br',
+            'gst_no' => 'nullable|string|max:15',
+            'aadhar_no' => 'nullable|string|digits:12',
+            'l_docu_uplode' => 'nullable|file|max:2048',
+            'permanent_address' => 'nullable|string|max:500',
         ];
     }
 
@@ -108,14 +128,12 @@ class AdmissionformController extends Controller
             'branch_id' => $request->branch_id,
             'ledger_id' => $request->ledger_id,
             'admission_date' => $request->admission_date,
-            'image' => $request->image, // Placeholder for image upload
             'student_id' => $request->student_id,
             'student_name' => $request->student_name,
             'gender' => $request->gender,
             'marital_status' => $request->marital_status,
             'age' => $request->age,
             'aadhar_no' => $request->aadhar_no,
-            'upload_file' => $request->upload_file, // This will be handled as an array
             'caste' => $request->caste,
             'primary_contact_no' => $request->primary_contact_no,
             'whatsapp_no' => $request->whatsapp_no,
@@ -139,11 +157,9 @@ class AdmissionformController extends Controller
             'temporary_city_town' => $request->temporary_city_town,
             'temporary_pin_code' => $request->temporary_pin_code,
         ]);
-
         if ($request->hasFile('image') && $request->file('image')->isValid()) {
             $admission->addMediaFromRequest('image')->toMediaCollection('image');
         }
-        
         if ($request->hasFile('upload_file')) {
             $admission->clearMediaCollection('upload_file');
             foreach ($request->file('upload_file') as $file) {
@@ -155,14 +171,57 @@ class AdmissionformController extends Controller
 
         $uploadFiles = $admission->getMedia('upload_file')->map(function ($media) {
             return $media->getUrl(); 
-        });
-
         $image = $admission->getFirstMediaUrl('image');
+
+        });
+            $ledgerValidator = Validator::make($request->all(), $this->lager());
+
+        if ($ledgerValidator->fails()) {
+            return response()->json(['errors' => $ledgerValidator->errors()->first()], 422);
+        }
+        
+         $ledger = Ledgermaster::create([
+            'licence_no' => $admission->licence_no,
+            'branch_id' => $admission->branch_id,
+            'student_id' => $admission->id,
+            'title' => $request->title,
+            'ledger_name' => $admission->student_name,
+            'relation_type' => $request->relation_type,
+            'name' => $admission->father_name,
+            'contact_no' => $admission->primary_contact_no,
+            'whatsapp_no' => $admission->whatsapp_no,
+            'email' => $admission->email,
+            'ledger_group' => $request->ledger_group,
+            'opening_balance' => $request->opening_balance,
+            'opening_type' => $request->opening_type,
+            'gst_no' => $request->gst_no,
+            'aadhar_no' => $admission->aadhar_no,
+            'permanent_address' => $admission->permanent_address,
+            'state' => $admission->permanent_state,
+            'city' => $admission->permanent_city,
+            'city_town_village' => $admission->permanent_city_town,
+            'pin_code' => $admission->permanent_pin_code,
+            'temporary_address' => $admission->temporary_address,
+        ]);
+
+        if ($request->hasFile('l_docu_uplode') && $request->file('l_docu_uplode')->isValid()) {
+            $ledger->addMediaFromRequest('l_docu_uplode')->toMediaCollection('l_docu_uplode');
+        }
+
+        if ($request->hasFile('ledger_file')) {
+            $ledger->clearMediaCollection('ledger_file');
+            foreach ($request->file('ledger_file') as $file) {
+                if ($file->isValid()) {
+                    $ledger->addMedia($file)->toMediaCollection('ledger_file');
+                }
+            }
+        }
+
         $admission = $admission->load(['licence', 'branch']);
 
         return response()->json([
         'success' => true,
-        'message' => 'Admission created successfully',
+        'message' => 'Admission With Lager created successfully',
         'admission' => [
             'id' => $admission->id,
             'student_name' => $admission->student_name,
@@ -280,11 +339,55 @@ class AdmissionformController extends Controller
             }
         }
 
+        $ledgerValidator = Validator::make($request->all(), $this->lager());
+
+        if ($ledgerValidator->fails()) {
+            return response()->json(['errors' => $ledgerValidator->errors()->first()], 422);
+        }
+        $ledger = Ledgermaster::where('student_id', $admission->id)->firstOrFail();
+
+        $ledger->update([
+            'licence_no' => $admission->licence_no,
+            'branch_id' => $admission->branch_id,
+            'student_id' => $admission->id,
+            'title' => $request->title,
+            'ledger_name' => $admission->student_name,
+            'relation_type' => $request->relation_type,
+            'name' => $admission->father_name,
+            'contact_no' => $admission->primary_contact_no,
+            'whatsapp_no' => $admission->whatsapp_no,
+            'email' => $admission->email,
+            'ledger_group' => $request->ledger_group,
+            'opening_balance' => $request->opening_balance,
+            'opening_type' => $request->opening_type,
+            'gst_no' => $request->gst_no,
+            'aadhar_no' => $admission->aadhar_no,
+            'permanent_address' => $admission->permanent_address,
+            'state' => $admission->permanent_state,
+            'city' => $admission->permanent_city,
+            'city_town_village' => $admission->permanent_city_town,
+            'pin_code' => $admission->permanent_pin_code,
+            'temporary_address' => $admission->temporary_address,
+        ]);
+         if ($request->hasFile('ledger_file')) {
+                $ledger->clearMediaCollection('ledger_file');
+                foreach ($request->file('ledger_file') as $file) {
+                    if ($file->isValid()) {
+                        $ledger->addMedia($file)->toMediaCollection('ledger_file');
+                    }
+                }
+            }
+
+            if ($request->hasFile('l_docu_uplode')) {
+                $ledger->clearMediaCollection('l_docu_uplode');
+                $ledger->addMediaFromRequest('l_docu_uplode')->toMediaCollection('l_docu_uplode');
+            }
+
         $admission = $admission->load(['licence', 'branch']);
 
         return response()->json([
         'success' => true,
-        'message' => 'Admission form updated successfully',
+        'message' => 'Admission form with Ledger updated successfully',
         'admission' => $admission
     ]);
 
@@ -304,19 +407,31 @@ class AdmissionformController extends Controller
     public function destroy(string $id)
     {
         try {
-            $admission = Admissionform::findOrFail($id);
+        $admission = Admissionform::findOrFail($id);
 
-            // Delete associated media files
-            $admission->clearMediaCollection('image');
-            $admission->clearMediaCollection('upload_file');
+        // Delete ledger media
+        $admission->clearMediaCollection('upload_file');
+        $admission->clearMediaCollection('image');
 
-            // Now delete the record
-            $admission->delete();
 
-            return response()->json(['message' => 'admission form and associated files deleted successfully'], 200);
+        $ledgers = Ledgermaster::where('student_id', $admission->id)->get();
 
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to delete admission form', 'message' => $e->getMessage()], 500);
+        foreach ($ledgers as $ledger) {
+            $ledger->clearMediaCollection('ledger_file');
+            $ledger->clearMediaCollection('l_docu_uplode');
+            $ledger->delete();
         }
+
+        // Delete the ledger itself
+        $admission->delete();
+
+        return response()->json(['message' => 'admission and associated Ledger  deleted successfully'], 200);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Failed to delete ledger or related admission',
+            'message' => $e->getMessage()
+        ], 500);
+    }
     }
 }

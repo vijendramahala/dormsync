@@ -15,9 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('licence_no');
             $table->integer('branch_id');
-            $table->integer('ledger_id');
             $table->date('admission_date');
-            $table->string('image');
             $table->string('student_id');
             $table->string('student_name');
             $table->string('gender');
