@@ -5,17 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Floor extends Model
+class Itemmaster extends Model
 {
     use HasFactory;
 
-    protected $fillable =[
+    protected $fillable = [
         'licence_no',
         'branch_id',
-        'building_id',
-        'floor'
+        'item_no',
+        'item_name',
+        'item_group',
+        'manufacturer',
+        'stock_qty',
     ];
-
     public function licence()
     {
         return $this->belongsTo(Licence::class, 'licence_no', 'licence_no');
@@ -24,9 +26,5 @@ class Floor extends Model
     public function branch()
     {
         return $this->belongsTo(Branch::class, 'branch_id', 'id');
-    }
-    public function building()
-    {
-        return $this->belongsTo(Building::class, 'building_id', 'id');
     }
 }
