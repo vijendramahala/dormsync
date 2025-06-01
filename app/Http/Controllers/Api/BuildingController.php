@@ -39,7 +39,7 @@ class BuildingController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'licence_no' => 'nullable|exists:licences,licence_no',
-            'branch_id' => 'nullable|exists:branches,id',
+            'branch_id' => 'nullable|integer|exists:branches,id',
             'building' => 'required',
         ]);
         
