@@ -29,6 +29,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/licences', [LicenceController::class, 'index']);
     Route::post('/licences', [LicenceController::class, 'store']);
     Route::put('/licences/{id}', [LicenceController::class, 'update']);
+    Route::delete('/licenses/{id}', [LicenceController::class, 'destroy']);
     Route::resource('branch', BranchController::class);
     Route::resource('staff', StaffmasterController::class);
     Route::resource('companydetail', CompanydetailCntroller::class);
