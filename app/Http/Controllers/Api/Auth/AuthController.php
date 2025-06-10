@@ -93,7 +93,7 @@ class AuthController extends Controller
                     'message' => 'License has expired',
                 ], 403);
             }
-
+            
             $licenseData = [
                 'licence_no' => $license->licence_no,
                 'license_due_date' => $licenseDueDate,
