@@ -25,6 +25,7 @@ class AuthController extends Controller
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
+                'status' => false,
                 'message' => 'Invalid credentials',
             ], 401);
         }
@@ -32,6 +33,7 @@ class AuthController extends Controller
         // Step 3: Check role
         if (!in_array($user->role, ['admin', 'superadmin', 'subadmin', 'staff'])) {
             return response()->json([
+                'status' => false,
                 'message' => 'Unauthorized user',
             ], 403);
         }
@@ -41,12 +43,13 @@ class AuthController extends Controller
             $token = $user->createToken('superadmin-token')->plainTextToken;
 
             return response()->json([
+                'status' => true,
                 'message' => 'Login successful (Superadmin)',
                 'token' => $token,
                 'user' => $user,
                 'license' => null,
                 'branch' => null,
-            ]);
+            ], 200);
         }
 
         // ✅ OTHER ROLES — Require licence_no and branch_name
@@ -62,6 +65,7 @@ class AuthController extends Controller
 
         if (!$branch) {
             return response()->json([
+                'status' => false,
                 'message' => 'Branch not found for this license number and branch name.',
             ], 404);
         }
@@ -69,6 +73,7 @@ class AuthController extends Controller
         // Step 5: Confirm user is from this branch
         if ($user->licence_no !== $request->licence_no || $user->branch_id !== $branch->id) {
             return response()->json([
+                'status' => false,
                 'message' => 'User does not belong to this branch or license.',
             ], 403);
         }
@@ -84,6 +89,7 @@ class AuthController extends Controller
 
             if ($licenseDueDate && $currentDate > $licenseDueDate) {
                 return response()->json([
+                    'status' => false,
                     'message' => 'License has expired',
                 ], 403);
             }
@@ -110,12 +116,14 @@ class AuthController extends Controller
         $token = $user->createToken('superadmin-token')->plainTextToken;
 
         return response()->json([
+            'status' => true,
             'message' => 'Login successful',
             'token' => $token,
             'user' => $user,
             'license' => $licenseData,
             'branch' => $branchData,
-        ]);
+        ], 200);
     }
+
 
 }
