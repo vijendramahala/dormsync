@@ -34,7 +34,7 @@ class LicenceController extends Controller
         'l_city' => 'required',
         'l_state' => 'required',
         'gst_no' => 'nullable',
-        'owner_name' => 'required',
+        'owner_name' => 'required|unique:licences,owner_name',
         'contact_no' => 'required',
         'deal_amt' => 'nullable|numeric',
         'receive_amt' => 'nullable|numeric',
@@ -67,6 +67,15 @@ class LicenceController extends Controller
             'remarks',
             'salesman'
         ]));
+
+        $validator = Validator::make($request->all(), [
+        'branch_name' => 'required|unique:branches,branch_name'
+        // No need for 'branches' in validation now
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json(['errors' => $validator->errors()->first()], 422);
+    }
 
         // ✅ Create only 1 Branch entry (main branch)
       $branch =  Branch::create([
