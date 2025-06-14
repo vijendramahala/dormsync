@@ -39,9 +39,9 @@ class Licence extends Model
         'amc_due_date',
     ];
 
-    public function user()
+public function user()
 {
-    return $this->hasOne(User::class, 'licence_id');
+    return $this->hasOne(User::class, 'licence_no', 'licence_no');
 }
 
 }

@@ -22,15 +22,19 @@ class Branch extends Model
     'location_id'
     ];
 
-    public function users()
+
+        public function user()
     {
-        return $this->hasMany(User::class);
+        return $this->hasOne(\App\Models\User::class, 'branch_id', 'id')
+                    ->where('role', 'admin');
     }
 
     public function licence()
     {
-        return $this->belongsTo(Licence::class);
+        return $this->belongsTo(\App\Models\Licence::class, 'licence_id', 'id');
     }
+
+
 
 
 }

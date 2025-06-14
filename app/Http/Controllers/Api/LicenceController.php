@@ -7,14 +7,14 @@ use Illuminate\Http\Request;
 use App\Models\Licence;
 use App\Models\Branch;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Validator;
 
 class LicenceController extends Controller
 {
     public function index()
     {
-        $licenses = Licence::all();
+        $licenses = Licence::with(['user:licence_no,username,password'])->get();
 
         return response()->json([
             'status' => true,
@@ -22,8 +22,16 @@ class LicenceController extends Controller
         ]);
     }
 
+
     public function store(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['status' => false, 'message' => $validator->errors()->first()], 200);
+        }
+
         $validator = Validator::make($request->all(), [
             'licence_no' => 'required|unique:licences,licence_no',
             'license_due_date' => 'required|date',
@@ -47,7 +55,7 @@ class LicenceController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()->first()], 422);
+            return response()->json(['status' => false, 'message' => $validator->errors()->first()], 200);
         }
 
         try {
@@ -75,7 +83,7 @@ class LicenceController extends Controller
                 'name' => $license->owner_name,
                 'licence_no' => $license->licence_no,
                 'contact_no' => $license->contact_no,
-                'branch_name' => $request->branch_name,
+                'branch_name' => $license->company_name,
                 'b_address' => $license->l_address,
                 'b_city' => $license->l_city,
                 'b_state' => $license->l_state,
@@ -91,12 +99,18 @@ class LicenceController extends Controller
                 'branch_id' => $branch->id,
                 'u_name' => $license->owner_name,
                 'username' => $request->username,
-                'password' => Hash::make($request->password),
+                'password' => $request->password,
                 'role' => 'admin'
             ]);
 
             // Generate dummy branches
             $branchesData = [];
+
+        if ($request->has('branch_list') && is_array($request->branch_list)) {
+            // Use user-supplied branch list if available
+            $branchesData = $request->branch_list;
+        } else {
+            // Fallback to dummy branches
             for ($i = 1; $i <= $license->branch_count; $i++) {
                 $branchesData[] = [
                     'branch_name' => 'Branch ' . $i,
@@ -105,6 +119,12 @@ class LicenceController extends Controller
                     'b_state' => 'State ' . $i,
                 ];
             }
+        }
+
+        $license->update([
+            'branch_list' => json_encode($branchesData)
+        ]);
+
 
             $license->update([
                 'branch_list' => json_encode($branchesData)
@@ -114,7 +134,7 @@ class LicenceController extends Controller
                 'status' => true,
                 'message' => 'License created successfully with branch list',
                 'license_id' => $license->id
-            ], 201);
+            ], 200);
 
         } catch (\Exception $e) {
             \Log::error('License creation error: ' . $e->getMessage());
@@ -127,114 +147,112 @@ class LicenceController extends Controller
 
     public function update(Request $request, string $id)
     {
-        $validator = Validator::make($request->all(), [
-            'license_due_date' => 'required|date',
-            'amc_due_date' => 'required|date',
-            'company_name' => 'required',
-            'l_address' => 'required',
-            'l_city' => 'required',
-            'l_state' => 'required',
-            'gst_no' => 'nullable',
-            'owner_name' => 'required',
-            'contact_no' => 'required',
-            'deal_amt' => 'nullable|numeric',
-            'receive_amt' => 'nullable|numeric',
-            'due_amt' => 'nullable|numeric',
-            'branch_count' => 'required|integer',
-            'remarks' => 'nullable',
-            'branch_name' => 'required',
-            'username' => 'required',
-            'password' => 'required|min:6',
-            'location_id' => 'required|integer'
-        ]);
+        try {
+            $license = Licence::findOrFail($id);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()->first()], 422);
-        }
+            $existingBranch = Branch::where('licence_no', $license->licence_no)->first();
 
-        $license = Licence::findOrFail($id);
-
-        // Update licence details
-        $license->update($request->only([
-            'license_due_date',
-            'amc_due_date',
-            'company_name',
-            'l_address',
-            'l_city',
-            'l_state',
-            'gst_no',
-            'owner_name',
-            'contact_no',
-            'deal_amt',
-            'receive_amt',
-            'due_amt',
-            'branch_count',
-            'remarks'
-        ]));
-
-        // Delete existing branches
-        Branch::where('licence_no', $license->licence_no)->delete();
-
-        // Recreate main branch
-        $branch = Branch::create([
-            'name' => $license->owner_name,
-            'licence_no' => $license->licence_no,
-            'contact_no' => $license->contact_no,
-            'branch_name' => $request->branch_name,
-            'b_address' => $license->l_address,
-            'b_city' => $license->l_city,
-            'b_state' => $license->l_state,
-            'location_id' => $request->location_id
-        ]);
-        $branch->update([
-            'location_id' => $branch->id
-        ]);
-
-        // Update or create user
-        $user = User::where('licence_no', $license->licence_no)
-            ->where('branch_id', $branch->id)
-            ->first();
-
-        if ($user) {
-            $user->update([
-                'u_name' => $license->owner_name,
-                'username' => $request->username,
-                'password' => Hash::make($request->password),
-                'role' => 'admin'
+            $validator = Validator::make($request->all(), [
+                'license_due_date' => 'required|date',
+                'amc_due_date' => 'required|date',
+                'company_name' => 'required',
+                'l_address' => 'required',
+                'l_city' => 'required',
+                'l_state' => 'required',
+                'gst_no' => 'nullable',
+                'owner_name' => 'required',
+                'contact_no' => 'required',
+                'deal_amt' => 'nullable|numeric',
+                'receive_amt' => 'nullable|numeric',
+                'due_amt' => 'nullable|numeric',
+                'branch_count' => 'required|integer',
+                'remarks' => 'nullable',
+                'branch_name' => 'required',
+                'name' => 'required', // unique validation hata diya
+                'username' => 'required',
+                'password' => 'required|min:6',
             ]);
-        } else {
-            User::create([
+
+            if ($validator->fails()) {
+                return response()->json(['status' => false, 'message' => $validator->errors()->first()], 200);
+            }
+
+            // Update license data
+            $license->update($request->only([
+                'license_due_date',
+                'amc_due_date',
+                'company_name',
+                'l_address',
+                'l_city',
+                'l_state',
+                'gst_no',
+                'owner_name',
+                'contact_no',
+                'deal_amt',
+                'receive_amt',
+                'due_amt',
+                'branch_count',
+                'remarks'
+            ]));
+
+            // Delete old branches
+            Branch::where('licence_no', $license->licence_no)->delete();
+
+            // Recreate main branch
+            $branch = Branch::create([
+                'name' => $license->owner_name,
                 'licence_no' => $license->licence_no,
-                'branch_id' => $branch->id,
-                'u_name' => $license->owner_name,
-                'username' => $request->username,
-                'password' => Hash::make($request->password),
-                'role' => 'admin'
+                'contact_no' => $license->contact_no,
+                'branch_name' => $license->company_name,
+                'b_address' => $license->l_address,
+                'b_city' => $license->l_city,
+                'b_state' => $license->l_state,
+                'location_id' => $request->location_id,
             ]);
+            $branch->update(['location_id' => $branch->id]);
+
+            // Update or create user
+            $user = User::where('licence_no', $license->licence_no)->first();
+
+            if ($user) {
+                $user->update([
+                    'u_name' => $license->owner_name,
+                    'username' => $request->username,
+                    'password' => $request->password, // Hash if needed
+                    'role' => 'admin'
+                ]);
+            } else {
+                User::create([
+                    'licence_no' => $license->licence_no,
+                    'branch_id' => $branch->id,
+                    'u_name' => $license->owner_name,
+                    'username' => $request->username,
+                    'password' => $request->password, // Hash if needed
+                    'role' => 'admin'
+                ]);
+            }
+
+            // If frontend sends branch_list, use that
+            if ($request->has('branch_list') && is_array($request->branch_list)) {
+                $license->update([
+                    'branch_list' => json_encode($request->branch_list)
+                ]);
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => 'License updated successfully',
+                'license_id' => $license->id
+            ], 200);
+
+        } catch (\Exception $e) {
+            \Log::error('License update error: ' . $e->getMessage());
+            return response()->json([
+                'status' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
         }
-
-        // Regenerate dummy branches
-        $branchesData = [];
-        for ($i = 1; $i <= $license->branch_count; $i++) {
-            $branchesData[] = [
-                'branch_name' => 'Branch ' . $i,
-                'b_address' => 'Address ' . $i,
-                'b_city' => 'City ' . $i,
-                'b_state' => 'State ' . $i,
-            ];
-        }
-
-        $license->update([
-            'branch_list' => json_encode($branchesData)
-        ]);
-
-        return response()->json([
-            'status' => true,
-            'message' => 'License updated successfully with branch list',
-            'license_id' => $license->id
-        ]);
     }
-
 
 
     public function destroy($id)

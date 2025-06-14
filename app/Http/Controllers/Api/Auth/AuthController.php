@@ -4,10 +4,11 @@ namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
+// use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use App\Models\Licence;
 use \App\Models\Branch;
+use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
@@ -15,19 +16,26 @@ class AuthController extends Controller
     public function superAdminLogin(Request $request)
     {
         // Step 1: Validate basic fields
-        $request->validate([
-            'username' => 'required|string',
-            'password' => 'required|string',
-        ]);
+            $validator = Validator::make(request()->all(), [
+        'username' => 'required|string',
+        'password' => 'required|string',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'status' => false,
+            'message' => $validator->errors()->first(),
+        ], 200);
+    }
 
         // Step 2: Find user by username
         $user = User::where('username', $request->username)->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        if (!$user || $request->password !== $user->password) {
             return response()->json([
                 'status' => false,
                 'message' => 'Invalid credentials',
-            ], 401);
+            ], 200);
         }
 
         // Step 3: Check role
@@ -35,7 +43,7 @@ class AuthController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Unauthorized user',
-            ], 403);
+            ], 200);
         }
 
         // ✅ IF ROLE IS SUPERADMIN — SKIP LICENCE/BRANCH VALIDATION
@@ -87,11 +95,11 @@ class AuthController extends Controller
             $amcDueDate = $license->amc_due_date;
             $currentDate = now();
 
-            if ($licenseDueDate && $currentDate > $licenseDueDate) {
+            if ( $currentDate >= $amcDueDate) {
                 return response()->json([
                     'status' => false,
                     'message' => 'License has expired',
-                ], 403);
+                ], 200);
             }
             
             $licenseData = [
@@ -123,6 +131,23 @@ class AuthController extends Controller
             'license' => $licenseData,
             'branch' => $branchData,
         ], 200);
+    }
+
+    public function logout(Request $request)
+    {
+        $user = auth()->user();
+
+        if(!$user){
+            return response()->json([
+                'message' => 'Not authenticated'
+            ], 401);
+        }
+
+        $user->tokens()->delete();
+
+        return response()->json([
+            'message' => 'Logged Out'
+        ]);
     }
 
 

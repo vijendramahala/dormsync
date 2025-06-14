@@ -20,24 +20,29 @@ use App\Http\Controllers\Api\ProspectController;
 use App\Http\Controllers\Api\FeesentryController;
 use App\Http\Controllers\Api\VoucherentryController;
 use App\Http\Controllers\Api\ItemmasterController;
+use App\Http\Controllers\Api\MiscController;
+use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\TryController;
+
 // Public Routes
 Route::post('/login', [AuthController::class, 'superAdminLogin']);
 Route::post('/superadmin', [BranchController::class, 'superadmin']);
+Route::post('/get-branches-by-licence', [BranchController::class, 'getBranchesByLicence']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/licences', [LicenceController::class, 'index']);
     Route::post('/licences', [LicenceController::class, 'store']);
-    Route::put('/licences/{id}', [LicenceController::class, 'update']);
-    Route::delete('/licenses/{id}', [LicenceController::class, 'destroy']);
+    Route::put('/licences/update/{id}', [LicenceController::class, 'update']);
+    Route::delete('/licences/delete/{id}', [LicenceController::class, 'destroy']);
     Route::resource('branch', BranchController::class);
     Route::resource('staff', StaffmasterController::class);
+    Route::resource('misc', MiscController::class);
     Route::resource('companydetail', CompanydetailCntroller::class);
     Route::resource('admissionform', AdmissionformController::class);
     Route::resource('ledger', LedgermasterController::class);
     Route::resource('profile', UplodeprofileController::class);
-    Route::post('/get-branches-by-licence', [BranchController::class, 'getBranchesByLicence']);
     Route::put('/user/change-password', [BranchController::class, 'changePassword']);
+    Route::resource('user', UserController::class);
     Route::resource('building',BuildingController::class);
     Route::resource('floor',FloorController::class);
     Route::resource('room',RoomController::class);
@@ -53,10 +58,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/hosteler/data/{licence_no}', [FeesentryController::class, 'getCombinedData']);
     Route::resource('/voucher',VoucherentryController::class);
     Route::resource('/item',ItemmasterController::class);
+
+
     
-    
+    Route::post('/logout',[AuthController::class,'logout']);
 });
-Route::get('/show-content', [TryController::class, 'showContent']);
+Route::get('/test', [TryController::class, 'showContent']);
 
 // Authenticated User Info Route
 Route::get('/user', function (Request $request) {

@@ -7,26 +7,36 @@ use Illuminate\Http\Request;
 use App\Models\Branch;
 use App\Models\Licence;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 
 class BranchController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $branches = Branch::with(['licence', 'users' => function ($query) {
-                $query->whereIn('role', ['admin', 'subadmin']);
-            }
-        ])->get();
+        $licenceNo = $request->input('licence_no');
 
-        return response()->json(['status' => true, 'branches' => $branches], 200);
+        $branches = Branch::with(['user' => function ($query) {
+                $query->select('id', 'branch_id', 'username', 'password')
+                    ->where('role', 'admin');
+            }])
+            ->where('licence_no', $licenceNo)
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'branches' => $branches
+        ], 200);
     }
+
+
+
 
     public function store(Request $request)
     {
         try {
-            $request->validate([
+            $validator = Validator::make($request->all(), [
                 'name' => 'required|unique:branches',
-                'branch_name' => 'nullable',
+                'branch_name' => 'required',
                 'b_address' => 'required',
                 'b_city' => 'required',
                 'b_state' => 'required',
@@ -34,9 +44,16 @@ class BranchController extends Controller
                 'licence_no' => 'required',
                 'contact_no' => 'required',
                 // 'u_name' => 'required',
-                'username' => 'required|unique:users,username',
+                // 'username' => 'required|unique:users,username',
                 'password' => 'required|min:6',
             ]);
+            
+            if($validator->fails()){
+                return response()->json([
+                    'status' => false,
+                    'message' => $validator->errors()->first()
+                ], 200);
+            }
 
             $branch = Branch::create([
                 'name' => $request->name,
@@ -57,8 +74,8 @@ class BranchController extends Controller
                 'branch_id' => $branch->id,
                 'licence_no' => $branch->licence_no,
                 'u_name' => $branch->name,
-                'username' => $request->username,
-                'password' => Hash::make($request->password),
+                'username' => $branch->name,
+                'password' => $request->password,
                 'role' => 'admin',
             ]);
 
@@ -66,10 +83,11 @@ class BranchController extends Controller
             $licence = Licence::where('licence_no', $branch->licence_no)->first();
 
             return response()->json([
+                'status' => true,
                 'message' => 'Branch created successfully.',
                 'branch' => $branch,
                 'licence_by_no' => $licence
-            ], 201);  
+            ], 200);  
               } catch (\Exception $e) {
             return response()->json(['message' => 'Error: ' . $e->getMessage()], 500);
         }
@@ -94,7 +112,7 @@ class BranchController extends Controller
 
         $user = User::where('branch_id', $branch->id)->where('role', 'admin')->first();
 
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'name' => 'required|unique:branches,name,' . $id,
             'branch_name' => 'nullable',
             'b_address' => 'required',
@@ -106,8 +124,16 @@ class BranchController extends Controller
             'password' => 'nullable|min:6',
         ]);
 
+        if($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => $validator->errors()->first()
+            ],200);
+    }
+
         $branch->update([
             'name' => $request->name,
+            'contact_no' => $request->contact_no,
             'branch_name' => $request->branch_name,
             'b_address' => $request->b_address,
             'b_city' => $request->b_city,
@@ -124,7 +150,7 @@ class BranchController extends Controller
                 $user->username = $request->username;
             }
             if ($request->filled('password')) {
-                $user->password = Hash::make($request->password);
+                $user->password = $request->password;
             }
             $user->licence_no = $branch->licence_no;
             $user->save();
@@ -133,10 +159,11 @@ class BranchController extends Controller
             $licence = Licence::where('licence_no', $branch->licence_no)->first();
 
                     return response()->json([
+                    'status' => true,
                     'message' => 'Branch update successfully.',
                     'branch' => $branch,
                     'licence_by_no' => $licence
-                ], 201);
+                ], 200);
         }
 
         return response()->json([
@@ -156,7 +183,7 @@ class BranchController extends Controller
 
             $branch->delete();
 
-            return response()->json(['success' => true, 'message' => 'Branch and its users deleted successfully']);
+            return response()->json(['success' => true, 'message' => 'Branch and its users deleted successfully'], 200);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Error deleting branch: ' . $e->getMessage()], 500);
         }
@@ -174,13 +201,14 @@ class BranchController extends Controller
         return response()->json([
             'status' => false,
             'message' => 'No branches found for this licence number',
-        ], 404);
+        ], 200);
     }
 
     return response()->json([
         'status' => true,
+        'message' => 'Branch sucessfully Fatch',
         'branches' => $branches
-    ]);
+    ], 200);
 }
 
     public function superadmin(Request $request)
@@ -197,7 +225,7 @@ class BranchController extends Controller
         $user = User::create([
             'u_name' => $request->u_name,
             'username' => $request->username,
-            'password' => Hash::make($request->password),
+            'password' => $request->password,
             'role' => 'superadmin',
         ]);
 
@@ -229,12 +257,12 @@ class BranchController extends Controller
         }
 
         // Check old password
-        if (!Hash::check($request->old_password, $user->password)) {
+        if ($request->old_password !== $user->password) {
             return response()->json(['error' => 'Old password incorrect'], 400);
         }
 
         // Update new password
-        $user->password = Hash::make($request->new_password);
+        $user->password = $request->new_password;
         $user->save();
 
         return response()->json(['message' => 'Password changed successfully']);

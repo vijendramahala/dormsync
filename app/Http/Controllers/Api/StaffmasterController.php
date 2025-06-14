@@ -44,7 +44,7 @@ class StaffmasterController extends Controller
             'licence_no' => 'nullable|exists:licences,licence_no',
             'branch_id' => 'nullable|exists:branches,id',
             'title' => 'required|in:Mr,Miss,Mrs,Dr', 
-            'staff_name' => 'required|string|max:255',
+            'staff_name' => 'required|string|unique:staffmasters,staff_name',
             'relation_type' => 'required|in:S/O,D/O,W/O',
             'name' => 'required',
             'upload_file' => 'nullable|array',
@@ -55,7 +55,7 @@ class StaffmasterController extends Controller
             'department' => 'required|string|max:255',
             'designation' => 'required|string|max:255',
             'joining_date' => 'required|date',
-            'aadhar_no' => 'required|string|size:12',
+            'aadhar_no' => 'nullable|string|size:12',
             'permanent_address' => 'required|string|max:500',
             'state' => 'required|string|max:255',
             'city' => 'required|string|max:255',
@@ -66,7 +66,7 @@ class StaffmasterController extends Controller
         ]);
         
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()->first()], 422);
+            return response()->json(['status' => false, 'message' => $validator->errors()->first()], 200);
         }
 
                 // Step 1: Licence check
@@ -125,9 +125,10 @@ class StaffmasterController extends Controller
             $staff = $staff->load(['licence', 'branch']);
 
             return response()->json([
+                'status' => true,
                 'message' => 'Staff added successfully',
                 'data' => $staff
-            ], 201);
+            ], 200);
         
         } catch (\Exception $e) {
             return response()->json(['error' => 'Something went wrong', 'message' => $e->getMessage()], 500);
@@ -162,7 +163,7 @@ class StaffmasterController extends Controller
             'licence_no' => 'nullable|exists:licences,licence_no',
             'branch_id' => 'nullable|exists:branches,id',
             'title' => 'required|in:Mr,Miss,Mrs,Dr', 
-            'staff_name' => 'required|string|max:255',
+            'staff_name' => 'required',
             'relation_type' => 'required|in:S/O,D/O,W/O',
             'name' => 'required',
             'upload_file' => 'nullable|array',
@@ -173,7 +174,7 @@ class StaffmasterController extends Controller
             'department' => 'required|string|max:255',
             'designation' => 'required|string|max:255',
             'joining_date' => 'required|date',
-            'aadhar_no' => 'required|string|size:12',
+            'aadhar_no' => 'nullable|string|size:12',
             'permanent_address' => 'required|string|max:500',
             'state' => 'required|string|max:255',
             'city' => 'required|string|max:255',
@@ -184,7 +185,7 @@ class StaffmasterController extends Controller
         ]);
         
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()->first()], 422);
+            return response()->json(['status' => false, 'message' => $validator->errors()->first()], 200);
         }
          $licence = Licence::where('licence_no', $request->licence_no)->first();
         if (!$licence) {
@@ -248,10 +249,10 @@ class StaffmasterController extends Controller
         $staff = $staff->load(['licence', 'branch']);
 
         return response()->json([
-            'success' => true,
+            'status' => true,
             'message' => 'Staff updated successfully',
             'data' => $staff
-        ]);
+        ], 200);
     } catch (\Exception $e) {
         return response()->json([
             'success' => false,

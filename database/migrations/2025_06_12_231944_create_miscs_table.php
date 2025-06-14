@@ -11,18 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('branches', function (Blueprint $table) {
+        Schema::create('miscs', function (Blueprint $table) {
             $table->id();
-            $table->string('licence_no');
-            $table->string('contact_no');
+            $table->string('licence_no')->constrained('licences');
+            $table->integer('misc_id');
             $table->string('name');
-            $table->string('branch_name');
-            $table->string('b_address');
-            $table->string('b_city');
-            $table->string('b_state');
-            $table->unsignedBigInteger('location_id')->nullable();
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 
@@ -31,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('branches');
+        Schema::dropIfExists('miscs');
     }
 };
