@@ -27,10 +27,6 @@ class BranchController extends Controller
             'branches' => $branches
         ], 200);
     }
-
-
-
-
     public function store(Request $request)
     {
         try {
@@ -74,7 +70,7 @@ class BranchController extends Controller
                 'branch_id' => $branch->id,
                 'licence_no' => $branch->licence_no,
                 'u_name' => $branch->name,
-                'username' => $branch->name,
+                'username' => $request->username,
                 'password' => $request->password,
                 'role' => 'admin',
             ]);
@@ -177,13 +173,13 @@ class BranchController extends Controller
         try {
             $branch = Branch::findOrFail($id);
 
-            if ($branch->users) {
-                $branch->users()->delete();
+            if ($branch->user) {
+                $branch->user()->delete();
             }
 
             $branch->delete();
 
-            return response()->json(['success' => true, 'message' => 'Branch and its users deleted successfully'], 200);
+            return response()->json(['status' => true, 'message' => 'Branch and its users deleted successfully'], 200);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Error deleting branch: ' . $e->getMessage()], 500);
         }

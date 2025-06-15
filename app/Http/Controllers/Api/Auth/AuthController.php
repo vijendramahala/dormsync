@@ -55,8 +55,6 @@ class AuthController extends Controller
                 'message' => 'Login successful (Superadmin)',
                 'token' => $token,
                 'user' => $user,
-                'license' => null,
-                'branch' => null,
             ], 200);
         }
 
@@ -65,7 +63,6 @@ class AuthController extends Controller
             'licence_no' => 'required|string',
             'branch_name' => 'required|string',
         ]);
-
         // Step 4: Get branch
         $branch = Branch::where('licence_no', $request->licence_no)
                         ->where('branch_name', $request->branch_name)

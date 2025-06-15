@@ -9,6 +9,7 @@ use App\Models\Licence;
 use App\Models\Branch;
 use App\Models\Ledgermaster;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 
 class StaffmasterController extends Controller
 {
@@ -16,27 +17,25 @@ class StaffmasterController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-{
-    $staff = staffmaster::with(['licence', 'branch'])->get();
-
-    return response()->json([
-        'status' => true,
-        'data' => $staff
-    ]);
-}
-
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
     {
-        //
+        $licenceNo = Auth::user()->licence_no; // Ensure user is authenticated and has this column
+        $branchId = Auth::user()->branch_id;
+
+        $staff = staffmaster::with([
+        'licence:id,licence_no', // Select only specific licence columns
+        'branch:id,branch_name,b_city'// Select only specific branch columns
+    ])
+            ->where('licence_no', $licenceNo)
+            ->where('branch_id', $branchId)
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'data' => $staff
+        ], 200);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+
     public function store(Request $request)
     {
     //   return response()->json($request->all());
@@ -44,7 +43,7 @@ class StaffmasterController extends Controller
             'licence_no' => 'nullable|exists:licences,licence_no',
             'branch_id' => 'nullable|exists:branches,id',
             'title' => 'required|in:Mr,Miss,Mrs,Dr', 
-            'staff_name' => 'required|string|unique:staffmasters,staff_name',
+            'staff_name' => 'required',
             'relation_type' => 'required|in:S/O,D/O,W/O',
             'name' => 'required',
             'upload_file' => 'nullable|array',
@@ -279,7 +278,7 @@ class StaffmasterController extends Controller
             // Now delete the record
             $staff->delete();
 
-            return response()->json(['message' => 'Staff and associated files deleted successfully'], 200);
+            return response()->json([ 'status' => true, 'message' => 'Staff and associated files deleted successfully'], 200);
 
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to delete staff', 'message' => $e->getMessage()], 500);

@@ -8,22 +8,29 @@ use App\Models\Ledgermaster;
 use App\Models\Licence;
 use App\Models\Branch;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 
 
 class LedgermasterController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+
     public function index()
     {
-        $ledger = Ledgermaster::with(['licence', 'branch'])->get();
+        $licenceno = Auth::user()->licence_no;
+        $branchid = Auth::user()->branch_id;
 
-    return response()->json([
-        'status' => true,
-        'data' => $ledger
-    ]);
+        $ledger = Ledgermaster::with([
+            'licence:id,licence_no',
+            'branch:id,branch_name,b_city'
+        ])
+        ->where('licence_no', $licenceno)
+        ->where('branch_id', $branchid)
+        ->get();
 
+        return response()->json([
+            'status' => true,
+            'data' => $ledger
+        ], 200);
     }
 
     /**
@@ -43,13 +50,13 @@ class LedgermasterController extends Controller
         'relation_type' => 'required|in:S/O,D/O,W/O',
         'ledger_file' => 'nullable|array',
         'ledger_file.*' => 'file|max:2048',
-        'name' => 'required|string|max:255',
+        'name' => 'nullable|string|max:255',
         'contact_no' => 'nullable|string|regex:/^[0-9]{10}$/',
         'whatsapp_no' => 'nullable|string|regex:/^[0-9]{10}$/',
         'email' => 'nullable|email|max:255',
         'ledger_group' => 'required|string|max:255',
         'opening_balance' => 'required|numeric|min:0',
-        'opening_type' => 'required|in:cr,br',
+        'opening_type' => 'required|in:Cr,Dr',
         'gst_no' => 'nullable|string|max:15',
         'aadhar_no' => 'nullable|string|digits:12',
         'l_docu_uplode' => 'nullable|file|max:2048',
@@ -66,106 +73,86 @@ class LedgermasterController extends Controller
      * Store a newly created resource in storage.
      */
   public function store(Request $request)
-{
-    // STEP 1: Ledger Validation
-    $ledgerValidator = Validator::make($request->all(),$this->validation());
+    {
+        // STEP 1: Ledger Validation
+        $ledgerValidator = Validator::make($request->all(),$this->validation());
 
-    if ($ledgerValidator->fails()) {
-        return response()->json(['errors' => $ledgerValidator->errors()->first()], 422);
-    }
-
-   // ✅ STEP 1.1: Licence and Branch Belonging Check
-$licence = Licence::where('licence_no', $request->licence_no)->first();
-if (!$licence) {
-    return response()->json(['error' => 'Invalid licence.'], 404);
-}
-
-$branch = Branch::where('id', $request->branch_id) // 🔧 Corrected from $request->id to $request->branch_id
-                ->where('licence_no', $licence->licence_no)
-                ->first();
-
-if (!$branch) {
-    return response()->json(['error' => 'The selected branch does not belong to the given licence.'], 422);
-}
-
-
-    try {
-        // STEP 2: Create Ledger
-        $ledger = Ledgermaster::create([
-            'licence_no' => $request->licence_no,
-            'branch_id' => $request->branch_id,
-            'title' => $request->title,
-            'ledger_name' => $request->ledger_name,
-            'relation_type' => $request->relation_type,
-            'name' => $request->name,
-            'contact_no' => $request->contact_no,
-            'whatsapp_no' => $request->whatsapp_no,
-            'email' => $request->email,
-            'ledger_group' => $request->ledger_group,
-            'opening_balance' => $request->opening_balance,
-            'opening_type' => $request->opening_type,
-            'gst_no' => $request->gst_no,
-            'aadhar_no' => $request->aadhar_no,
-            'permanent_address' => $request->permanent_address,
-            'state' => $request->state,
-            'city' => $request->city,
-            'city_town_village' => $request->city_town_village,
-            'address' => $request->address,
-            'pin_code' => $request->pin_code,
-            'temporary_address' => $request->temporary_address,
-        ]);
-
-        if ($request->hasFile('l_docu_uplode') && $request->file('l_docu_uplode')->isValid()) {
-            $ledger->addMediaFromRequest('l_docu_uplode')->toMediaCollection('l_docu_uplode');
+        if ($ledgerValidator->fails()) {
+            return response()->json(['status' => false, 'message' => $ledgerValidator->errors()->first()], 200);
         }
 
-        if ($request->hasFile('ledger_file')) {
-            $ledger->clearMediaCollection('ledger_file');
-            foreach ($request->file('ledger_file') as $file) {
-                if ($file->isValid()) {
-                    $ledger->addMedia($file)->toMediaCollection('ledger_file');
+    // ✅ STEP 1.1: Licence and Branch Belonging Check
+    $licence = Licence::where('licence_no', $request->licence_no)->first();
+    if (!$licence) {
+        return response()->json(['error' => 'Invalid licence.'], 404);
+    }
+
+    $branch = Branch::where('id', $request->branch_id) // 🔧 Corrected from $request->id to $request->branch_id
+                    ->where('licence_no', $licence->licence_no)
+                    ->first();
+
+    if (!$branch) {
+        return response()->json(['error' => 'The selected branch does not belong to the given licence.'], 422);
+    }
+
+
+        try {
+            // STEP 2: Create Ledger
+            $ledger = Ledgermaster::create([
+                'licence_no' => $request->licence_no,
+                'branch_id' => $request->branch_id,
+                'title' => $request->title,
+                'ledger_name' => $request->ledger_name,
+                'relation_type' => $request->relation_type,
+                'name' => $request->name,
+                'contact_no' => $request->contact_no,
+                'whatsapp_no' => $request->whatsapp_no,
+                'email' => $request->email,
+                'ledger_group' => $request->ledger_group,
+                'opening_balance' => $request->opening_balance,
+                'opening_type' => $request->opening_type,
+                'gst_no' => $request->gst_no,
+                'aadhar_no' => $request->aadhar_no,
+                'permanent_address' => $request->permanent_address,
+                'state' => $request->state,
+                'city' => $request->city,
+                'city_town_village' => $request->city_town_village,
+                'address' => $request->address,
+                'pin_code' => $request->pin_code,
+                'temporary_address' => $request->temporary_address,
+            ]);
+
+            if ($request->hasFile('l_docu_uplode') && $request->file('l_docu_uplode')->isValid()) {
+                $ledger->addMediaFromRequest('l_docu_uplode')->toMediaCollection('l_docu_uplode');
+            }
+
+            if ($request->hasFile('ledger_file')) {
+                $ledger->clearMediaCollection('ledger_file');
+                foreach ($request->file('ledger_file') as $file) {
+                    if ($file->isValid()) {
+                        $ledger->addMedia($file)->toMediaCollection('ledger_file');
+                    }
                 }
             }
+                $ledger = $ledger->load(['licence', 'branch']);
+
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Ledger saved successfully',
+                'data' => [
+                    'ledger' => $ledger,
+                ]
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Something went wrong',
+                'message' => $e->getMessage(),
+            ], 500);
         }
-            $ledger = $ledger->load(['licence', 'branch']);
-
-
-        return response()->json([
-            'message' => 'Ledger saved successfully',
-            'data' => [
-                'ledger' => $ledger,
-            ]
-        ], 201);
-
-    } catch (\Exception $e) {
-        return response()->json([
-            'error' => 'Something went wrong',
-            'message' => $e->getMessage(),
-        ], 500);
-    }
-}
-
-
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
   public function update(Request $request, string $id)
     {
         // STEP 1: Validate Ledger Data

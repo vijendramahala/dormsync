@@ -8,33 +8,28 @@ use App\Models\Uplodeprofile;
 use App\Models\Licence;
 use App\Models\Branch;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 
 class UplodeprofileController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        $profile = Uplodeprofile::with(['licence', 'branch'])->get();
+        $licenceno = Auth::user()->licence_no;
+        $branchid = Auth::user()->branch_id;
+
+        $profile = Uplodeprofile::with([
+            'licence:id,licence_no',
+            'branch:id,branch_name,b_city'
+        ])
+        ->where('licence_no', $licenceno)
+        ->where('branch_id', $branchid)
+        ->get();
 
         return response()->json([
             'status' => true,
             'data' => $profile
-            ]);
+        ], 200);
     }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -74,27 +69,6 @@ class UplodeprofileController extends Controller
         }
     }
 
-
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         $validator = Validator::make($request->all(), [
@@ -142,11 +116,6 @@ class UplodeprofileController extends Controller
         }
     }
 
-
-
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         try {

@@ -8,6 +8,7 @@ use App\Models\Itemmaster;
 use App\Models\Licence;
 use App\Models\Branch;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 
 class ItemmasterController extends Controller
 {
@@ -16,21 +17,22 @@ class ItemmasterController extends Controller
      */
     public function index()
     {
-            $item = Itemmaster::with(['licence', 'branch'])->get();
+           $licenceno = Auth::user()->licence_no;
+           $branchid = Auth::user()->branch_id;
 
-        return response()->json([
+           $item = Itemmaster::with([
+            'licence:id,licence_no',
+            'branch:id,branch_name,b_city'
+           ])
+           ->where('licence_no', $licenceno)
+           ->where('branch_id', $branchid)
+           ->get();
+
+           return response()->json([
             'status' => true,
             'data' => $item
-        ]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
+        ], 200);
+     }
 
     private function validation()
     {
@@ -53,7 +55,7 @@ class ItemmasterController extends Controller
         $validator = Validator::make($request->all(),$this->validation());
 
         if($validator->fails()){
-            return response()->json(['errors' => $validator->errors()->first()], 422);
+            return response()->json(['status' => false, 'message' => $validator->errors()->first()], 200);
         }
         $licence = Licence::where('licence_no', $request->licence_no)->first();
         if (!$licence) {
@@ -84,9 +86,10 @@ class ItemmasterController extends Controller
                 $item = $item->load(['licence', 'branch']);
 
                 return response()->json([
+                    'status' => true,
                 'message' => 'Item Master successfully',
                 'data' => $item
-            ], 201);
+            ], 200);
 
         } catch (\Excaption $e){
             return response()->json([
@@ -97,31 +100,12 @@ class ItemmasterController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         $validator = Validator::make($request->all(),$this->validation());
 
         if($validator->fails()){
-            return response()->json(['errors' => $validator->errors()->first()], 422);
+            return response()->json(['status' => false, 'message' => $validator->errors()->first()], 200);
         }
         $licence = Licence::where('licence_no', $request->licence_no)->first();
         if (!$licence) {
@@ -153,9 +137,10 @@ class ItemmasterController extends Controller
                 $item = $item->load(['licence', 'branch']);
 
                 return response()->json([
+                    'status' => true,
                 'message' => 'Item Master update1 successfully',
                 'data' => $item
-            ], 201);
+            ], 200);
         } catch (\Excaptio $e){
             return response()->json([
                 'sucess' => false,
@@ -175,7 +160,7 @@ class ItemmasterController extends Controller
 
             $item->delete();
 
-            return response()->json(['message' => 'deleted successfully'],200);
+            return response()->json(['status' => true, 'message' => 'deleted successfully'],200);
         } catch (\Exception $e){
             return response()->json([
                 'success' => false,

@@ -22,7 +22,6 @@ return new class extends Migration
             $table->string('b_state');
             $table->unsignedBigInteger('location_id')->nullable();
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 

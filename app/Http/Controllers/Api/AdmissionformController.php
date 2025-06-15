@@ -9,6 +9,7 @@ use App\Models\Admissionform;
 use App\Models\Licence;
 use App\Models\Branch;
 use App\Models\Ledgermaster;
+use Illuminate\Support\Facades\Auth;
 
 class AdmissionformController extends Controller
 {
@@ -17,12 +18,22 @@ class AdmissionformController extends Controller
      */
     public function index()
     {
-        $admission = Admissionform::with(['licence', 'branch'])->get();
+        $licenceno = Auth::user()->licence_no;
+        $branchid = Auth::user()->branch_id;
 
-    return response()->json([
-        'status' => true,
-        'data' => $admission
-    ]);
+        $admission = Admissionform::with([
+            'licence:id,;icence_no',
+            'branch:id,branch_name,b_city'
+        ])
+        ->where('licence_no', $licenceno)
+        ->where('branch_id', $branchid)
+        ->get();
+
+        return response()->json([
+            'status' => true,
+            'data' => $admission
+        ], 200);
+        
     }
 
     /**
@@ -101,7 +112,7 @@ class AdmissionformController extends Controller
     $validator = Validator::make($request->all(), $this->validation());
 
     if ($validator->fails()) {
-        return response()->json(['errors' => $validator->errors()], 422);
+        return response()->json(['status' => false, 'message' => $validator->errors()], 200);
     }
             // Step 1: Licence check
     $licence = Licence::where('licence_no', $request->licence_no)->first();
@@ -177,7 +188,7 @@ class AdmissionformController extends Controller
             $ledgerValidator = Validator::make($request->all(), $this->lager());
 
         if ($ledgerValidator->fails()) {
-            return response()->json(['errors' => $ledgerValidator->errors()->first()], 422);
+            return response()->json(['status' => false, 'message' => $ledgerValidator->errors()->first()], 200);
         }
         
          $ledger = Ledgermaster::create([
@@ -267,7 +278,7 @@ class AdmissionformController extends Controller
     $validator = Validator::make($request->all(),$this->validation());
 
     if ($validator->fails()) {
-        return response()->json(['errors' => $validator->errors()], 422);
+        return response()->json(['status' => false, 'message' => $validator->errors()], 200);
     }
         $licence = Licence::where('licence_no', $request->licence_no)->first();
     if (!$licence) {
@@ -389,7 +400,7 @@ class AdmissionformController extends Controller
         'success' => true,
         'message' => 'Admission form with Ledger updated successfully',
         'admission' => $admission
-    ]);
+    ], 200);
 
     } catch (\Exception $e) {
         return response()->json([
@@ -425,7 +436,7 @@ class AdmissionformController extends Controller
         // Delete the ledger itself
         $admission->delete();
 
-        return response()->json(['message' => 'admission and associated Ledger  deleted successfully'], 200);
+        return response()->json(['status' => true, 'message' => 'admission and associated Ledger  deleted successfully'], 200);
 
     } catch (\Exception $e) {
         return response()->json([

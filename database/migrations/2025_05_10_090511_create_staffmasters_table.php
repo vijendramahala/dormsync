@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('licence_no');
             $table->integer('branch_id');
             $table->string('title');
-            $table->string('staff_name')->unique();
+            $table->string('staff_name');
             $table->string('relation_type');
             $table->string('name');
             $table->string('contact_no');

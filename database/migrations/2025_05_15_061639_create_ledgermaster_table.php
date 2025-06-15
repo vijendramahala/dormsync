@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('relation_type');
             $table->string('name');
             $table->string('contact_no', 15); // string is fine for phone numbers
-            $table->string('whatsapp_no', 15);
+            $table->string('whatsapp_no', 15)->nullable();
             $table->string('email')->nullable();
             $table->string('ledger_group');
             $table->decimal('opening_balance', 15, 2)->default(0);
