@@ -17,7 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('branch_id');
             $table->string('hosteler_details')->nullable();
             $table->string('hosteler_id');
-            $table->date('admission_date');
+            $table->string('admission_date');
             $table->string('hosteler_name');
             $table->string('course_name');
             $table->string('father_name');
@@ -27,6 +27,11 @@ return new class extends Migration
             $table->integer('total_remaining');
             $table->integer('EMI_recived')->default(0);
             $table->integer('EMI_total')->default(1);
+            $table->string('other1')->nullable();
+            $table->string('other2')->nullable();
+            $table->string('other3')->nullable();
+            $table->string('other4')->nullable();
+            $table->string('other5')->nullable();
             $table->timestamps();
         });
     }

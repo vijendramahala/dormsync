@@ -26,10 +26,14 @@ class Feesentry extends Model
         'total_remaining',
         'EMI_recived',
         'EMI_total',
+        'other1',
+        'other2',
+        'other3',
+        'other4',
+        'other5',
     ];
 
     protected $casts = [
-        'admission_date' => 'date',
         'fees_structure' => 'array',
         'EMI_recived' => 'integer',
         'EMI_total' => 'integer',

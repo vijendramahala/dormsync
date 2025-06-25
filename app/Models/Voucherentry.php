@@ -27,6 +27,11 @@ class Voucherentry extends Model implements HasMedia
         'narration',
         'paid_by',
         'remark',
+        'other1',
+        'other2',
+        'other3',
+        'other4',
+        'other5',
     ];
 
     protected $dates = ['voucher_date'];

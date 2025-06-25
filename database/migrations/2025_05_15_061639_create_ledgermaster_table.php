@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('licence_no');
             $table->unsignedBigInteger('branch_id');
-            $table->integer('student_id')->nullable();
+            $table->string('student_id')->nullable();
             $table->string('title');
-            $table->string('ledger_name');
+            $table->string('ledger_name')->unique();
             $table->string('relation_type');
             $table->string('name');
             $table->string('contact_no', 15); // string is fine for phone numbers
@@ -34,6 +34,15 @@ return new class extends Migration
             $table->string('city_town_village')->nullable();
             $table->string('pin_code', 10)->nullable();
             $table->string('temporary_address')->nullable();    
+            $table->string('t_state')->nullable();   
+            $table->string('t_city')->nullable();
+            $table->string('t_city_town_village')->nullable();
+            $table->string('t_pin_code', 10)->nullable();
+            $table->string('other1')->nullable();
+            $table->string('other2')->nullable();
+            $table->string('other3')->nullable();
+            $table->string('other4')->nullable();
+            $table->string('other5')->nullable();
             $table->timestamps();
         });
     }

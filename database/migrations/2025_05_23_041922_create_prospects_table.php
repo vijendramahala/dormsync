@@ -18,11 +18,21 @@ return new class extends Migration
             $table->string('student_name');
             $table->string('gender');
             $table->string('contact_no');
+            $table->string('father_name')->nullable();
+            $table->string('f_contact_no')->nullable();
             $table->string('address');
             $table->string('staff');
-            $table->date('next_appointment_date');
+            $table->string('next_appointment_date');
             $table->time('time');
+            $table->string('city')->nullable();
+            $table->string('state')->nullable();
+            $table->string('prospect_status');
             $table->string('remark');
+            $table->string('other1')->nullable();
+            $table->string('other2')->nullable();
+            $table->string('other3')->nullable();
+            $table->string('other4')->nullable();
+            $table->string('other5')->nullable();
             $table->timestamps();
         });
     }

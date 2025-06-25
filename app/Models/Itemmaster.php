@@ -17,6 +17,11 @@ class Itemmaster extends Model
         'item_group',
         'manufacturer',
         'stock_qty',
+        'other1',
+        'other2',
+        'other3',
+        'other4',
+        'other5',
     ];
     public function licence()
     {

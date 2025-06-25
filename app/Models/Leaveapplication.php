@@ -28,6 +28,11 @@ class Leaveapplication extends Model implements HasMedia
         'contact',
         'destination',
         'purpose_of_leave',
+        'other1',
+        'other2',
+        'other3',
+        'other4',
+        'other5',
     ];
 
     // If you have date fields, Laravel can cast them automatically

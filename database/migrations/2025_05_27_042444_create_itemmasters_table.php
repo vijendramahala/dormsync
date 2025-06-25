@@ -20,6 +20,11 @@ return new class extends Migration
             $table->string('item_group');
             $table->string('manufacturer');
             $table->integer('stock_qty');
+            $table->string('other1')->nullable();
+            $table->string('other2')->nullable();
+            $table->string('other3')->nullable();
+            $table->string('other4')->nullable();
+            $table->string('other5')->nullable();
             $table->timestamps();
         });
     }

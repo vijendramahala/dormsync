@@ -9,6 +9,7 @@ use App\Models\Licence;
 use App\Models\Branch;
 use App\Models\Admissionform;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 
 class VisitorController extends Controller
 {
@@ -17,32 +18,31 @@ class VisitorController extends Controller
      */
     public function index()
     {
-        $visitor = Visitor::with(['licence', 'branch','student'])->get();
+       $licenceno = Auth::user()->licence_no;
+        $branchid = Auth::user()->branch_id;
 
-     return response()->json([
-        'status' => true,
-        'data' => $visitor
-        ]);
+        $visitor = Visitor::with([
+            'licence:id,;icence_no',
+            'branch:id,branch_name,b_city'
+        ])
+        ->where('licence_no', $licenceno)
+        ->where('branch_id', $branchid)
+        ->get();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'successfully',
+            'data' => $visitor
+        ], 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'licence_no' => 'nullable|exists:licences,licence_no',
             'branch_id' => 'nullable|exists:branches,id',
             'hosteler_details' => 'nullable|string|max:1000',
-            'hosteler_id' => 'required',
+            'hosteler_id' => 'required|exists:admissionforms,student_id',
             'admission_date' => 'required|date',
             'hosteler_name' => 'required|string|max:255',
             'course_name' => 'required|string|max:255',
@@ -55,6 +55,11 @@ class VisitorController extends Controller
             'purpose_of_visit' => 'required|string|max:500',
             'date_of_leave' => 'nullable|date|after_or_equal:visiting_date',
             'visitor_document' => 'nullable|file|mimes:jpeg,png,pdf,docx|max:2048',
+            'other1' => 'nullable|string|max:255',
+            'other2' => 'nullable|string|max:255',
+            'other3' => 'nullable|string|max:255',
+            'other4' => 'nullable|string|max:255',
+            'other5' => 'nullable|string|max:255',
             
         ]);
 
@@ -97,6 +102,11 @@ class VisitorController extends Controller
                     'aadhar_no' => $request->aadhar_no,
                     'purpose_of_visit' => $request->purpose_of_visit,
                     'date_of_leave' => $request->date_of_leave,
+                    'other1' => $request->other1,
+                    'other2' => $request->other2,
+                    'other3' => $request->other3,
+                    'other4' => $request->other4,
+                    'other5' => $request->other5,
                 ]);
                 if ($request->hasFile('visitor_document') && $request->file('visitor_document')->isValid()) {
                     $visitor->addMediaFromRequest('visitor_document')->toMediaCollection('visitor_document');
@@ -105,35 +115,19 @@ class VisitorController extends Controller
                 $visitor = $visitor->load(['licence', 'branch','student']);
 
                 return response()->json([
+                    'status' => true,
                 'message' => 'visitor form added successfully',
                 'data' => $visitor
-            ], 201);
+            ], 200);
 
             } catch (\Exception $e){
                 return response()->json([
-                    'success' => false,
+                    'status' => false,
                     'message' => 'Something went wrong',
                     'error' => $e->getmessage()
                 ],500);
             }
     }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
     /**
      * Update the specified resource in storage.
      */
@@ -143,7 +137,7 @@ class VisitorController extends Controller
             'licence_no' => 'nullable|exists:licences,licence_no',
             'branch_id' => 'nullable|exists:branches,id',
             'hosteler_details' => 'nullable|string|max:1000',
-            'hosteler_id' => 'required',
+            'hosteler_id' => 'required|exists:admissionforms,student_id',
             'admission_date' => 'required|date',
             'hosteler_name' => 'required|string|max:255',
             'course_name' => 'required|string|max:255',
@@ -156,6 +150,11 @@ class VisitorController extends Controller
             'purpose_of_visit' => 'required|string|max:500',
             'date_of_leave' => 'nullable|date|after_or_equal:visiting_date',
             'visitor_document' => 'nullable|file|mimes:jpeg,png,pdf,docx|max:2048',
+            'other1' => 'nullable|string|max:255',
+            'other2' => 'nullable|string|max:255',
+            'other3' => 'nullable|string|max:255',
+            'other4' => 'nullable|string|max:255',
+            'other5' => 'nullable|string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -199,6 +198,11 @@ class VisitorController extends Controller
                     'aadhar_no' => $request->aadhar_no,
                     'purpose_of_visit' => $request->purpose_of_visit,
                     'date_of_leave' => $request->date_of_leave,
+                    'other1' => $request->other1,
+                    'other2' => $request->other2,
+                    'other3' => $request->other3,
+                    'other4' => $request->other4,
+                    'other5' => $request->other5,
                 ]);
                 if ($request->hasFile('visitor_document') && $request->file('visitor_document')->isValid()) {
                     $visitor->clearMediaCollection('visitor_document');
@@ -208,13 +212,13 @@ class VisitorController extends Controller
                 $visitor = $visitor->load(['licence', 'branch','student']);
 
                 return response()->json([
-                    'success' => true,
+                    'status' => true,
                     'message' => 'visitor form update successsfully',
                     'data' => $visitor
-                ]);
+                ], 200);
             } catch (\Exception $e) {
                 return response()->json([
-                'success' => false,
+                'status' => false,
                 'message' => 'Somthing want wrong',
                 'error' => $e->getmessage()
                 ],500);
@@ -234,14 +238,15 @@ class VisitorController extends Controller
             $visitor->delete();
 
             return response()->json([
+                'status' => true,
                 'message' => 'visitor form deleted successfully',
-            ],200);
+            ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Faild to delete visitor form',
                 'message' => $e->getmessage()
-            ]);
+            ], 500);
 
         }
     }

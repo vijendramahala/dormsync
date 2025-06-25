@@ -8,6 +8,7 @@ use App\Models\Voucherentry;
 use App\Models\Licence;
 use App\Models\Branch;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 
 class VoucherentryController extends Controller
 {
@@ -16,20 +17,22 @@ class VoucherentryController extends Controller
      */
     public function index()
     {
-        $voucher = Voucherentry::with(['licence', 'branch'])->get();
+       $licenceno = Auth::user()->licence_no;
+        $branchid = Auth::user()->branch_id;
 
-     return response()->json([
-        'status' => true,
-        'data' => $voucher
-        ]);
-    }
+        $voucher = Voucherentry::with([
+            'licence:id,;icence_no',
+            'branch:id,branch_name,b_city'
+        ])
+        ->where('licence_no', $licenceno)
+        ->where('branch_id', $branchid)
+        ->get();
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        return response()->json([
+            'status' => true,
+            'message' => 'successfully',
+            'data' => $voucher
+        ], 200);
     }
 
     /**
@@ -52,6 +55,11 @@ class VoucherentryController extends Controller
             'narration' => 'required|string|max:255',
             'paid_by' => 'required|string|max:100',
             'remark' => 'nullable|string|max:255',
+            'other1' => 'nullable|string|max:255',
+            'other2' => 'nullable|string|max:255',
+            'other3' => 'nullable|string|max:255',
+            'other4' => 'nullable|string|max:255',
+            'other5' => 'nullable|string|max:255',
         ];
     }
     public function store(Request $request)
@@ -91,7 +99,12 @@ class VoucherentryController extends Controller
                     'credit' => $request->credit,
                     'narration' => $request->narration,
                     'paid_by' => $request->paid_by,
-                    'remark' => $request->remark
+                    'remark' => $request->remark,
+                    'other1' => $request->other1,
+                    'other2' => $request->other2,
+                    'other3' => $request->other3,
+                    'other4' => $request->other4,
+                    'other5' => $request->other5,
 
                 ]);
                 if ($request->hasFile('document') && $request->file('document')->isValid()) {
@@ -171,7 +184,12 @@ class VoucherentryController extends Controller
                     'credit' => $request->credit,
                     'narration' => $request->narration,
                     'paid_by' => $request->paid_by,
-                    'remark' => $request->remark
+                    'remark' => $request->remark,
+                    'other1' => $request->other1,
+                    'other2' => $request->other2,
+                    'other3' => $request->other3,
+                    'other4' => $request->other4,
+                    'other5' => $request->other5,
                 ]);
                 if ($request->hasFile('document') && $request->file('document')->isValid()) {
                     $voucher->clearMediaCollection('document');

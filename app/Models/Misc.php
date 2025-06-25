@@ -12,7 +12,12 @@ class Misc extends Model
     protected $fillable = [
         'licence_no',
         'misc_id',
-        'name'
+        'name',
+        'other1',
+        'other2',
+        'other3',
+        'other4',
+        'other5',
     ];
 
     public function licence()

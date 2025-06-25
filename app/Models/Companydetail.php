@@ -28,6 +28,11 @@ class Companydetail extends Model
         'information_1',
         'information_2',
         'information_3',
+        'other1',
+        'other2',
+        'other3',
+        'other4',
+        'other5',
     ];
        public function licence()
     {

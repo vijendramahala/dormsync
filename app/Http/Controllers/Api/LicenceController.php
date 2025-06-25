@@ -49,6 +49,11 @@ class LicenceController extends Controller
             'branch_count' => 'required|integer',
             'remarks' => 'nullable',
             'branch_name' => 'required|unique:branches,branch_name',
+            'other1' => 'nullable|string|max:255',
+            'other2' => 'nullable|string|max:255',
+            'other3' => 'nullable|string|max:255',
+            'other4' => 'nullable|string|max:255',
+            'other5' => 'nullable|string|max:255',
             'username' => 'required|unique:users,username',
             'password' => 'required|min:6',
             // 'location_id' => 'required|integer'
@@ -75,7 +80,12 @@ class LicenceController extends Controller
                 'due_amt',
                 'branch_count',
                 'remarks',
-                'salesman'
+                'salesman',
+                'other1',
+                'other2',
+                'other3',
+                'other4',
+                'other5',
             ]));
 
             // Create main branch
@@ -87,7 +97,12 @@ class LicenceController extends Controller
                 'b_address' => $license->l_address,
                 'b_city' => $license->l_city,
                 'b_state' => $license->l_state,
-                'location_id' => $request->location_id
+                'location_id' => $request->location_id,
+                'other1' => $request->other1,
+                'other2' => $request->other2,
+                'other3' => $request->other3,
+                'other4' => $request->other4,
+                'other5' => $request->other5,
             ]);
             $branch->update([
                 'location_id' => $branch->id
@@ -168,6 +183,11 @@ class LicenceController extends Controller
                 'branch_count' => 'required|integer',
                 'remarks' => 'nullable',
                 'branch_name' => 'required',
+                'other1' => 'nullable|string|max:255',
+                'other2' => 'nullable|string|max:255',
+                'other3' => 'nullable|string|max:255',
+                'other4' => 'nullable|string|max:255',
+                'other5' => 'nullable|string|max:255',
                 'name' => 'required', // unique validation hata diya
                 'username' => 'required',
                 'password' => 'required|min:6',
@@ -192,7 +212,12 @@ class LicenceController extends Controller
                 'receive_amt',
                 'due_amt',
                 'branch_count',
-                'remarks'
+                'remarks',
+                'other1',
+                'other2',
+                'other3',
+                'other4',
+                'other5',
             ]));
 
             // Delete old branches
@@ -208,6 +233,11 @@ class LicenceController extends Controller
                 'b_city' => $license->l_city,
                 'b_state' => $license->l_state,
                 'location_id' => $request->location_id,
+                'other1' => $request->other1,
+                'other2' => $request->other2,
+                'other3' => $request->other3,
+                'other4' => $request->other4,
+                'other5' => $request->other5,
             ]);
             $branch->update(['location_id' => $branch->id]);
 

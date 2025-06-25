@@ -28,6 +28,11 @@ class Visitor extends Model implements HasMedia
         'aadhar_no',
         'purpose_of_visit',
         'date_of_leave',
+        'other1',
+        'other2',
+        'other3',
+        'other4',
+        'other5',
     ];
 
     //Update code

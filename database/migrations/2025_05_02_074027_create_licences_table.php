@@ -30,6 +30,11 @@ return new class extends Migration
             $table->json('branch_list')->nullable();
             $table->string('salesman');
             $table->text('remarks')->nullable();
+            $table->string('other1')->nullable();
+            $table->string('other2')->nullable();
+            $table->string('other3')->nullable();
+            $table->string('other4')->nullable();
+            $table->string('other5')->nullable();
             $table->timestamps();
         });
     }

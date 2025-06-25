@@ -36,6 +36,15 @@ class Ledgermaster extends Model implements HasMedia
         'city_town_village',
         'pin_code',
         'temporary_address',
+        't_state',
+        't_city',
+        't_city_town_village',
+        't_pin_code',
+        'other1',
+        'other2',
+        'other3',
+        'other4',
+        'other5',
         ];
 
 

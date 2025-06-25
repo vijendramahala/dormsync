@@ -28,6 +28,11 @@ return new class extends Migration
             $table->string('aadhar_no');
             $table->string('purpose_of_visit');
             $table->dateTime('date_of_leave');
+            $table->string('other1')->nullable();
+            $table->string('other2')->nullable();
+            $table->string('other3')->nullable();
+            $table->string('other4')->nullable();
+            $table->string('other5')->nullable();
             $table->timestamps();
         });
     }

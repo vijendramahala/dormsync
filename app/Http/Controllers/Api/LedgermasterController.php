@@ -33,20 +33,12 @@ class LedgermasterController extends Controller
         ], 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
     private function validation(){
         return [
         'licence_no' => 'required|string|exists:licences,licence_no',
         'branch_id' => 'required|integer|exists:branches,id',
         'title' => 'required|string|max:100',
-        'ledger_name' => 'required|string|max:255',
+        'ledger_name' => 'required|string|max:255|unique:ledgermasters,ledger_name',
         'relation_type' => 'required|in:S/O,D/O,W/O',
         'ledger_file' => 'nullable|array',
         'ledger_file.*' => 'file|max:2048',
@@ -54,7 +46,7 @@ class LedgermasterController extends Controller
         'contact_no' => 'nullable|string|regex:/^[0-9]{10}$/',
         'whatsapp_no' => 'nullable|string|regex:/^[0-9]{10}$/',
         'email' => 'nullable|email|max:255',
-        'ledger_group' => 'required|string|max:255',
+        'ledger_group' => 'nullable|string|max:255',
         'opening_balance' => 'required|numeric|min:0',
         'opening_type' => 'required|in:Cr,Dr',
         'gst_no' => 'nullable|string|max:15',
@@ -66,6 +58,15 @@ class LedgermasterController extends Controller
         'city_town_village' => 'nullable|string|max:100',
         'pin_code' => 'nullable|string|digits:6',
         'temporary_address' => 'nullable|string|max:500',
+        't_state' => 'nullable|string|max:100',
+        't_city' => 'nullable|string|max:100',
+        't_city_town_village' => 'nullable|string|max:100',
+        't_pin_code' => 'nullable|string|digits:6',
+        'other1' => 'nullable|string|max:255',
+        'other2' => 'nullable|string|max:255',
+        'other3' => 'nullable|string|max:255',
+        'other4' => 'nullable|string|max:255',
+        'other5' => 'nullable|string|max:255',
         ];
     }
 
@@ -120,6 +121,15 @@ class LedgermasterController extends Controller
                 'address' => $request->address,
                 'pin_code' => $request->pin_code,
                 'temporary_address' => $request->temporary_address,
+                't_state' => $request->t_state,
+                't_city' => $request->t_city,
+                't_city_town_village' => $request->t_city_town_village,
+                't_pin_code' => $request->t_pin_code,
+                'other1' => $request->other1,
+                'other2' => $request->other2,
+                'other3' => $request->other3,
+                'other4' => $request->other4,
+                'other5' => $request->other5,
             ]);
 
             if ($request->hasFile('l_docu_uplode') && $request->file('l_docu_uplode')->isValid()) {
@@ -159,7 +169,7 @@ class LedgermasterController extends Controller
     $ledgerValidator = Validator::make($request->all(),$this->validation());
 
         if ($ledgerValidator->fails()) {
-            return response()->json(['errors' => $ledgerValidator->errors()->first()], 422);
+            return response()->json(['status' => false, 'message' => $ledgerValidator->errors()->first()], 200);
         }
 
         // STEP 1.1: Licence and Branch Validation
@@ -195,6 +205,15 @@ class LedgermasterController extends Controller
                 'address',
                 'pin_code',
                 'temporary_address',
+                't_state',
+                't_city',
+                't_city_town_village',
+                't_pin_code',
+                'other1',
+                'other2',
+                'other3',
+                'other4',
+                'other5',
             ]));
 
             // Handle ledger file uploads
@@ -215,12 +234,12 @@ class LedgermasterController extends Controller
             $ledger = $ledger->load(['licence', 'branch']);
 
             return response()->json([
-                'success' => true,
+                'status' => true,
                 'message' => 'Ledger  updated successfully',
                 'data' => [
                     'ledger' => $ledger->load(['licence', 'branch']),
                 ]
-            ]);
+            ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
@@ -236,24 +255,24 @@ class LedgermasterController extends Controller
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
-{
-    try {
-        $ledger = Ledgermaster::findOrFail($id);
+    {
+        try {
+            $ledger = Ledgermaster::findOrFail($id);
 
-        // Delete ledger media
-        $ledger->clearMediaCollection('ledger_file');
-        $ledger->clearMediaCollection('l_docu_uplode');
+            // Delete ledger media
+            $ledger->clearMediaCollection('ledger_file');
+            $ledger->clearMediaCollection('l_docu_uplode');
 
-        $ledger->delete();
+            $ledger->delete();
 
-        return response()->json(['message' => 'Ledger  deleted successfully'], 200);
+            return response()->json(['status' => true, 'message' => 'Ledger  deleted successfully'], 200);
 
-    } catch (\Exception $e) {
-        return response()->json([
-            'error' => 'Failed to delete ledger',
-            'message' => $e->getMessage()
-        ], 500);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to delete ledger',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
-}
 
 }

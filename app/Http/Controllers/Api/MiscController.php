@@ -7,13 +7,34 @@ use Illuminate\Http\Request;
 use App\Models\Misc;
 use App\Models\Licence;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 
 class MiscController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index()
+    {
+        $licenceno = Auth::user()->licence_no;
+        $branchid = Auth::user()->branch_id;
+
+        $Misc = Misc::with([
+            'licence:id,;icence_no',
+            'branch:id,branch_name,b_city'
+        ])
+        ->where('licence_no', $licenceno)
+        ->where('branch_id', $branchid)
+        ->get();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'successfully',
+            'data' => $Misc
+        ], 200);
+    }
+
+    public function miscdata(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'licence_no' => 'required|exists:licences,licence_no',
@@ -41,7 +62,12 @@ class MiscController extends Controller
         $validator = Validator::make($request->all(), [
            'licence_no' => 'required|exists:licences,licence_no',
            'misc_id' => 'required|integer',
-           'name' => 'required'
+           'name' => 'required',
+           'other1' => 'nullable|string|max:255',
+            'other2' => 'nullable|string|max:255',
+            'other3' => 'nullable|string|max:255',
+            'other4' => 'nullable|string|max:255',
+            'other5' => 'nullable|string|max:255',
         ]);
 
         if($validator->fails()){
@@ -55,7 +81,12 @@ class MiscController extends Controller
         $misc = Misc::create([
             'licence_no' => $request->licence_no,
             'misc_id' => $request->misc_id,
-            'name' => $request->name
+            'name' => $request->name,
+            'other1' => $request->other1,
+            'other2' => $request->other2,
+            'other3' => $request->other3,
+            'other4' => $request->other4,
+            'other5' => $request->other5,
         ]);
         return response()->json([
             'status' => true,
@@ -76,7 +107,12 @@ class MiscController extends Controller
         $validator = Validator::make($request->all(), [
            'licence_no' => 'required|exists:licences,licence_no',
            'misc_id' => 'required|integer',
-           'name' => 'required'
+           'name' => 'required',
+           'other1' => 'nullable|string|max:255',
+            'other2' => 'nullable|string|max:255',
+            'other3' => 'nullable|string|max:255',
+            'other4' => 'nullable|string|max:255',
+            'other5' => 'nullable|string|max:255',
         ]);
 
         if($validator->fails()){
@@ -92,7 +128,12 @@ class MiscController extends Controller
             $misc->update([
                 'licence_no' => $request->licence_no,
             'misc_id' => $request->misc_id,
-            'name' => $request->name
+            'name' => $request->name,
+            'other1' => $request->other1,
+            'other2' => $request->other2,
+            'other3' => $request->other3,
+            'other4' => $request->other4,
+            'other5' => $request->other5,
             ]);
             return response()->json([
                 'status' => true,

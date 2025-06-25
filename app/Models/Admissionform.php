@@ -32,6 +32,7 @@ class Admissionform extends Model implements HasMedia
         'year',
         'father_name',
         'mother_name',
+        'parent_contect',
         'guardian',
         'emergency_no',
         'permanent_address',
@@ -44,6 +45,12 @@ class Admissionform extends Model implements HasMedia
         'temporary_city',
         'temporary_city_town',
         'temporary_pin_code',
+        'active_status',
+        'other1',
+        'other2',
+        'other3',
+        'other4',
+        'other5',
     ];
    // In Admissionform.php model:
 
@@ -56,5 +63,18 @@ class Admissionform extends Model implements HasMedia
     {
         return $this->belongsTo(Branch::class, 'branch_id', 'id');
     }
+    // Admissionform.php
+    public function ledger()
+    {
+        return $this->hasOne(Ledgermaster::class, 'student_id', 'id');
+    }
+
+    public function room()
+    {
+        return $this->hasOne(Room::class, 'hosteler_id', 'student_id');
+    }
+
+
+
 
 }

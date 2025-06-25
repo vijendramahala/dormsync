@@ -13,17 +13,24 @@ class Roomassign extends Model
     protected $fillable = [
         'licence_no',
         'branch_id',
+        'room_id',
         'hosteler_details',
         'hosteler_id',
         'admission_date',
         'hosteler_name',
         'course_name',
         'father_name',
-        'building',
-        'floor',
+        'building_id',
+        'floor_id',
         'room_type',
         'room_no',
         'room_beds',
+        'active_status',
+        'other1',
+        'other2',
+        'other3',
+        'other4',
+        'other5',
     ];
 
     protected $casts = [
@@ -44,4 +51,9 @@ class Roomassign extends Model
     {
         return $this->belongsTo(Admissionform::class, 'hosteler_id', 'student_id');
     }
+    public function room()
+    {
+        return $this->belongsTo(Room::class, 'room_id');
+    }
+
 }

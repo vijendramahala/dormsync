@@ -16,6 +16,11 @@ return new class extends Migration
             $table->string('licence_no')->constrained('licences');
             $table->integer('misc_id');
             $table->string('name');
+            $table->string('other1')->nullable();
+            $table->string('other2')->nullable();
+            $table->string('other3')->nullable();
+            $table->string('other4')->nullable();
+            $table->string('other5')->nullable();
             $table->timestamps();
         });
     }

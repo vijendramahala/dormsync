@@ -28,7 +28,12 @@ class Licence extends Model
         'branch_count',
         'branch_list',
         'remarks',
-        'salesman'
+        'salesman',
+        'other1',
+        'other2',
+        'other3',
+        'other4',
+        'other5',
     ];
 
     protected $dates = [

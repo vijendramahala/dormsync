@@ -13,7 +13,12 @@ class Floor extends Model
         'licence_no',
         'branch_id',
         'building_id',
-        'floor'
+        'floor',
+        'other1',
+        'other2',
+        'other3',
+        'other4',
+        'other5',
     ];
 
     public function licence()

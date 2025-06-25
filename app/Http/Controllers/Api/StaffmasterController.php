@@ -53,7 +53,7 @@ class StaffmasterController extends Controller
             'email' => 'nullable|email|max:255',
             'department' => 'required|string|max:255',
             'designation' => 'required|string|max:255',
-            'joining_date' => 'required|date',
+            'joining_date' => 'required|date_format:d/m/Y',
             'aadhar_no' => 'nullable|string|size:12',
             'permanent_address' => 'required|string|max:500',
             'state' => 'required|string|max:255',
@@ -62,6 +62,11 @@ class StaffmasterController extends Controller
             'address' => 'nullable|string|max:500',
             'pin_code' => 'required|string|size:6',
             'temporary_address' => 'nullable|string|max:500',
+            'other1' => 'nullable|string|max:255',
+            'other2' => 'nullable|string|max:255',
+            'other3' => 'nullable|string|max:255',
+            'other4' => 'nullable|string|max:255',
+            'other5' => 'nullable|string|max:255',
         ]);
         
         if ($validator->fails()) {
@@ -107,6 +112,11 @@ class StaffmasterController extends Controller
                 'address' => $request->address,
                 'pin_code' => $request->pin_code,
                 'temporary_address' => $request->temporary_address,
+                'other1' => $request->other1,
+                'other2' => $request->other2,
+                'other3' => $request->other3,
+                'other4' => $request->other4,
+                'other5' => $request->other5,
             ]);
          if ($request->hasFile('uplode_file')) {
             $staff->clearMediaCollection('uplode_file');
@@ -172,7 +182,7 @@ class StaffmasterController extends Controller
             'email' => 'nullable|email|max:255',
             'department' => 'required|string|max:255',
             'designation' => 'required|string|max:255',
-            'joining_date' => 'required|date',
+            'joining_date' => 'required|date_format:d/m/Y',
             'aadhar_no' => 'nullable|string|size:12',
             'permanent_address' => 'required|string|max:500',
             'state' => 'required|string|max:255',
@@ -181,6 +191,11 @@ class StaffmasterController extends Controller
             'address' => 'nullable|string|max:500',
             'pin_code' => 'required|string|size:6',
             'temporary_address' => 'nullable|string|max:500',
+            'other1' => 'nullable|string|max:255',
+            'other2' => 'nullable|string|max:255',
+            'other3' => 'nullable|string|max:255',
+            'other4' => 'nullable|string|max:255',
+            'other5' => 'nullable|string|max:255',
         ]);
         
         if ($validator->fails()) {
@@ -225,6 +240,11 @@ class StaffmasterController extends Controller
             'address',
             'pin_code',
             'temporary_address',
+            'other1',
+            'other2',
+            'other3',
+            'other4',
+            'other5',
         ]));
         if ($request->hasFile('uplode_file')) {
             $staff->clearMediaCollection('uplode_file');

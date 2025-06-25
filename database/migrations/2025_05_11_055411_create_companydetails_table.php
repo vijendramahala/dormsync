@@ -31,6 +31,11 @@ return new class extends Migration
             $table->string('information_1')->nullable();
             $table->string('information_2')->nullable();
             $table->string('information_3')->nullable();  
+            $table->string('other1')->nullable();
+            $table->string('other2')->nullable();
+            $table->string('other3')->nullable();
+            $table->string('other4')->nullable();
+            $table->string('other5')->nullable();
             $table->timestamps();
         });
     }

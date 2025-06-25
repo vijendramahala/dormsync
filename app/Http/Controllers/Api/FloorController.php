@@ -9,6 +9,7 @@ use App\Models\Licence;
 use App\Models\Branch;
 use App\Models\Building;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 
 class FloorController extends Controller
 {
@@ -17,20 +18,21 @@ class FloorController extends Controller
      */
     public function index()
     {
-        $floor = Floor::with(['licence', 'branch','building'])->get();
+        $licenceno = Auth::user()->licence_no;
+        $branchid = Auth::user()->branch_id;
 
-     return response()->json([
-        'status' => true,
-        'data' => $floor
-        ]);
-    }
+        $floor = Floor::with([
+            'licence:id,licence_no',
+            'branch:id,branch_name,b_city'
+        ])
+        ->where('licence_no', $licenceno)
+        ->where('branch_id', $branchid)
+        ->get();
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        return response()->json([
+            'status' => true,
+            'data' => $floor
+        ], 200);
     }
 
     /**
@@ -38,18 +40,20 @@ class FloorController extends Controller
      */
     public function store(Request $request)
     {
-        // dd($request->all());
-        
-
         $validator = Validator::make($request->all(), [
             'licence_no' => 'nullable|exists:licences,licence_no',
             'branch_id' => 'nullable|exists:branches,id',
             'building_id' => 'nullable|exists:buildings,id',
-            'floor' => 'required'
+            'floor' => 'required',
+            'other1' => 'nullable|string|max:255',
+            'other2' => 'nullable|string|max:255',
+            'other3' => 'nullable|string|max:255',
+            'other4' => 'nullable|string|max:255',
+            'other5' => 'nullable|string|max:255',
         ]);
         
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()->first()], 422);
+            return response()->json(['status' => false, 'message' => $validator->errors()->first()], 200);
         }
       // Step 1: Check if licence exists
         $licence = Licence::where('licence_no', $request->licence_no)->first();
@@ -83,52 +87,44 @@ class FloorController extends Controller
                     'licence_no' => $request->licence_no,
                     'branch_id' => $request->branch_id,
                     'building_id' => $request->building_id,
-                    'floor' => $request->floor
+                    'floor' => $request->floor,
+                    'other1' => $request->other1,
+                    'other2' => $request->other2,
+                    'other3' => $request->other3,
+                    'other4' => $request->other4,
+                    'other5' => $request->other5,
                 ]);
 
                 $floor = $floor->load(['licence', 'branch','building']);
 
             return response()->json([
+                'status' => true,
                 'message' => 'floor added successfully',
                 'data' => $floor
-            ], 201);
+            ], 200);
 
             } catch (\Exception $e) {
-                 return response()->json(['error' => 'Something went wrong', 'message' => $e->getmessage()],500);
+                 return response()->json(['status' => false, 'message' => 'Something went wrong', 'error' => $e->getmessage()],500);
 
             }
     }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
+    
     public function update(Request $request, string $id)
     {
         $validator = Validator::make($request->all(), [
             'licence_no' => 'nullable|exists:licences,licence_no',
             'branch_id' => 'nullable|exists:branches,id',
             'building_id' => 'nullable|exists:buildings,id',
-            'floor' => 'required'
+            'floor' => 'required',
+            'other1' => 'nullable|string|max:255',
+            'other2' => 'nullable|string|max:255',
+            'other3' => 'nullable|string|max:255',
+            'other4' => 'nullable|string|max:255',
+            'other5' => 'nullable|string|max:255',
         ]);
         
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()->first()], 422);
+            return response()->json(['status' => false, 'message' => $validator->errors()->first()], 200);
         }
          $licence = Licence::where('licence_no', $request->licence_no)->first();
             if (!$licence) {
@@ -157,23 +153,28 @@ class FloorController extends Controller
                     'licence_no' => $request->licence_no,
                     'branch_id' => $request->branch_id,
                     'building_id' => $request->building_id,
-                    'floor' => $request->floor
+                    'floor' => $request->floor,
+                    'other1' => $request->other1,
+                    'other2' => $request->other2,
+                    'other3' => $request->other3,
+                    'other4' => $request->other4,
+                    'other5' => $request->other5,
                 ]);
 
                 $floor = $floor->load(['licence', 'branch','building']);
 
                 return response()->json([
-                    'success' => true,
+                    'status' => true,
                     'message' => 'floor updated successfully',
                     'data' => $floor
-                ]);
+                ], 200);
             }catch (\Exception $e)
                  {
                     return response()->json([
                         'success' => false,
                         'message' => 'somthing went wrong',
                         'error' => $e->getmessage()
-                    ],500);
+                    ], 500);
                     }
     }
 
@@ -187,10 +188,10 @@ class FloorController extends Controller
 
             $floor->delete();
 
-            return response()->json(['message' => 'floor deleted successfully'], 200);
+            return response()->json(['status' => true, 'message' => 'floor deleted successfully'], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'success' => false,
+                'status' => false,
                 'mesage' => 'somthing went wrong',
                 'error' => $e->getmessage()
             ],500);

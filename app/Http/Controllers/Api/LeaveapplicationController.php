@@ -9,6 +9,7 @@ use App\Models\Licence;
 use App\Models\Branch;
 use App\Models\Admissionform;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 
 class LeaveapplicationController extends Controller
 {
@@ -17,21 +18,23 @@ class LeaveapplicationController extends Controller
      */
     public function index()
     {
-        $leave = Leaveapplication::with(['licence', 'branch','student'])->get();
+       $licenceno = Auth::user()->licence_no;
+        $branchid = Auth::user()->branch_id;
 
-     return response()->json([
-        'status' => true,
-        'data' => $leave
-        ]);
+        $leave = Leaveapplication::with([
+            'licence:id,licence_no',
+            'branch:id,branch_name,b_city'
+        ])
+        ->where('licence_no', $licenceno)
+        ->where('branch_id', $branchid)
+        ->get();
+
+        return response()->json([
+            'status' => true,
+            'data' => $leave
+        ], 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
 
     /**
      * Store a newly created resource in storage.
@@ -56,6 +59,11 @@ class LeaveapplicationController extends Controller
         'destination'       => 'required|string|max:255',
         'purpose_of_leave'  => 'required|string|max:500',
         'attachment'        => 'nullable|file|mimes:jpeg,png,pdf,docx|max:2048',
+        'other1' => 'nullable|string|max:255',
+        'other2' => 'nullable|string|max:255',
+        'other3' => 'nullable|string|max:255',
+        'other4' => 'nullable|string|max:255',
+        'other5' => 'nullable|string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -97,7 +105,12 @@ class LeaveapplicationController extends Controller
                     'aadhar_no' => $request->aadhar_no,
                     'contact' => $request->contact,
                     'destination' => $request->destination,
-                    'purpose_of_leave' => $request->purpose_of_leave
+                    'purpose_of_leave' => $request->purpose_of_leave,
+                    'other1' => $request->other1,
+                    'other2' => $request->other2,
+                    'other3' => $request->other3,
+                    'other4' => $request->other4,
+                    'other5' => $request->other5,
                 ]);
                 if ($request->hasFile('attachment') && $request->file('attachment')->isValid()) {
                     $leave->addMediaFromRequest('attachment')->toMediaCollection('attachment');
@@ -158,6 +171,11 @@ class LeaveapplicationController extends Controller
         'destination'       => 'required|string|max:255',
         'purpose_of_leave'  => 'required|string|max:500',
         'attachment'        => 'nullable|file|mimes:jpeg,png,pdf,docx|max:2048',
+        'other1' => 'nullable|string|max:255',
+        'other2' => 'nullable|string|max:255',
+        'other3' => 'nullable|string|max:255',
+        'other4' => 'nullable|string|max:255',
+        'other5' => 'nullable|string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -201,7 +219,12 @@ class LeaveapplicationController extends Controller
                     'aadhar_no' => $request->aadhar_no,
                     'contact' => $request->contact,
                     'destination' => $request->destination,
-                    'purpose_of_leave' => $request->purpose_of_leave
+                    'purpose_of_leave' => $request->purpose_of_leave,
+                    'other1' => $request->other1,
+                    'other2' => $request->other2,
+                    'other3' => $request->other3,
+                    'other4' => $request->other4,
+                    'other5' => $request->other5,
                 ]);
                 if ($request->hasFile('attachment') && $request->file('attachment')->isValid()) {
                     $leave->clearMediaCollection('attachment');

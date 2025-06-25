@@ -16,15 +16,24 @@ class Prospect extends Model
         'student_name',
         'gender',
         'contact_no',
+        'father_name',
+        'f_contact_no',
         'address',
         'staff',
         'next_appointment_date',
         'time',
+        'city',
+        'state',
+        'prospect_status',
         'remark',
+        'other1',
+        'other2',
+        'other3',
+        'other4',
+        'other5',
     ];
 
     protected $casts = [
-        'next_appointment_date' => 'date',
         'time' => 'datetime:H:i:s',
     ];
 

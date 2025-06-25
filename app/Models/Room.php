@@ -14,7 +14,13 @@ class Room extends Model
         'room_no',
         'room_type',
         'room_beds',
-        'occupancy_status'
+        'current_occupants',
+        'occupancy_status',
+        'other1',
+        'other2',
+        'other3',
+        'other4',
+        'other5',
     ];
     public function licence()
     {
@@ -33,4 +39,10 @@ class Room extends Model
     {
         return $this->belongsTo(Floor::class, 'floor_id', 'id');
     }
+    public function admission()
+    {
+        return $this->belongsTo(Admissionform::class, 'hosteler_id', 'student_id');
+    }
+
+
 }

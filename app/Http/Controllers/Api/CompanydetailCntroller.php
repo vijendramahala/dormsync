@@ -8,6 +8,7 @@ use App\Models\Companydetail;
 use App\Models\Branch;
 use App\Models\Licence;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 
 class CompanydetailCntroller extends Controller
 {
@@ -16,12 +17,22 @@ class CompanydetailCntroller extends Controller
      */
     public function index()
 {
-    $company = Companydetail::with(['licence', 'branch'])->get();
+    $licenceno = Auth::user()->licence_no;
+        $branchid = Auth::user()->branch_id;
 
-    return response()->json([
-        'status' => true,
-        'data' => $company
-    ]);
+        $company = Companydetail::with([
+            'licence:id,;icence_no',
+            'branch:id,branch_name,b_city'
+        ])
+        ->where('licence_no', $licenceno)
+        ->where('branch_id', $branchid)
+        ->get();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'successfully',
+            'data' => $fees
+        ], 200);
 }
 
     /**
@@ -56,6 +67,11 @@ class CompanydetailCntroller extends Controller
         'information_1'       => 'nullable|string|max:255',
         'information_2'       => 'nullable|string|max:255',
         'information_3'       => 'nullable|string|max:255',
+        'other1' => 'nullable|string|max:255',
+        'other2' => 'nullable|string|max:255',
+        'other3' => 'nullable|string|max:255',
+        'other4' => 'nullable|string|max:255',
+        'other5' => 'nullable|string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -97,7 +113,12 @@ class CompanydetailCntroller extends Controller
                 'additional_info' => $request->additional_info,
                 'information_1' => $request->information_1,
                 'information_2' => $request->information_2,
-                'information_3' => $request->information_3
+                'information_3' => $request->information_3,
+                'other1' => $request->other1,
+                'other2' => $request->other2,
+                'other3' => $request->other3,
+                'other4' => $request->other4,
+                'other5' => $request->other5,
             ]);
 
             $company = $company->load(['licence', 'branch']);
@@ -156,6 +177,11 @@ class CompanydetailCntroller extends Controller
         'information_1'       => 'nullable|string|max:255',
         'information_2'       => 'nullable|string|max:255',
         'information_3'       => 'nullable|string|max:255',
+        'other1' => 'nullable|string|max:255',
+        'other2' => 'nullable|string|max:255',
+        'other3' => 'nullable|string|max:255',
+        'other4' => 'nullable|string|max:255',
+        'other5' => 'nullable|string|max:255',
     ]);
 
     // If validation fails, return errors
@@ -187,6 +213,11 @@ class CompanydetailCntroller extends Controller
             'information_1',
             'information_2',
             'information_3',
+            'other1',
+            'other2',
+            'other3',
+            'other4',
+            'other5'
         ]));
 
         // If branch_id is provided, update the associated branch

@@ -39,9 +39,15 @@ class BranchController extends Controller
                 'licence_id' => 'nullable|exists:licences,id',
                 'licence_no' => 'required',
                 'contact_no' => 'required',
+                'other1' => 'nullable|string|max:255',
+                'other2' => 'nullable|string|max:255',
+                'other3' => 'nullable|string|max:255',
+                'other4' => 'nullable|string|max:255',
+                'other5' => 'nullable|string|max:255',
                 // 'u_name' => 'required',
                 // 'username' => 'required|unique:users,username',
                 'password' => 'required|min:6',
+                
             ]);
             
             if($validator->fails()){
@@ -60,6 +66,11 @@ class BranchController extends Controller
                 'licence_id' => $request->licence_id,
                 'licence_no' => $request->licence_no,
                 'contact_no' => $request->contact_no,
+                'other1' => $request->other1,
+                'other2' => $request->other2,
+                'other3' => $request->other3,
+                'other4' => $request->other4,
+                'other5' => $request->other5,
             ]);
 
             $branch->update([
@@ -116,6 +127,11 @@ class BranchController extends Controller
             'b_state' => 'required',
             'licence_id' => 'nullable|exists:licences,id',
             'location_id' => 'nullable',
+            'other1' => 'nullable|string|max:255',
+            'other2' => 'nullable|string|max:255',
+            'other3' => 'nullable|string|max:255',
+            'other4' => 'nullable|string|max:255',
+            'other5' => 'nullable|string|max:255',
             'username' => 'nullable|string|unique:users,username,' . ($user->id ?? 'null'),
             'password' => 'nullable|min:6',
         ]);
@@ -136,6 +152,11 @@ class BranchController extends Controller
             'b_state' => $request->b_state,
             'licence_no' => $request->licence_no,
             'location_id' => $request->location_id,
+            'other1' => $request->other1,
+            'other2' => $request->other2,
+            'other3' => $request->other3,
+            'other4' => $request->other4,
+            'other5' => $request->other5,
         ]);
 
         $branch->update(['location_id' => $branch->id]);

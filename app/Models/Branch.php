@@ -18,7 +18,12 @@ class Branch extends Model
     'b_state',
     'licence_no',
     'contact_no', 
-    'location_id'
+    'location_id',
+    'other1',
+    'other2',
+    'other3',
+    'other4',
+    'other5',
     ];
 
 

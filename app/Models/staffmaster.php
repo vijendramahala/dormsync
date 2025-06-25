@@ -32,11 +32,13 @@ class staffmaster extends Model implements HasMedia
         'address',
         'pin_code',
         'temporary_address',
+        'other1',
+        'other2',
+        'other3',
+        'other4',
+        'other5',
     ];
 
-    protected $casts = [
-        'joining_date' => 'date',
-    ];
 
     public function licence()
     {

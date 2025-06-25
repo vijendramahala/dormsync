@@ -15,7 +15,12 @@ return new class extends Migration
             $table->id();
             $table->string('licence_no');
             $table->unsignedBigInteger('branch_id');
-            $table->string('building');
+            $table->string('building')->unique();
+            $table->string('other1')->nullable();
+            $table->string('other2')->nullable();
+            $table->string('other3')->nullable();
+            $table->string('other4')->nullable();
+            $table->string('other5')->nullable();
             $table->timestamps();
         });
     }

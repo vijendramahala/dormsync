@@ -24,7 +24,7 @@ return new class extends Migration
             $table->string('email')->nullable();
             $table->string('department');
             $table->string('designation');
-            $table->date('joining_date');
+            $table->string('joining_date');
             $table->string('aadhar_no', 12)->nullable();
             $table->string('permanent_address');
             $table->string('state');
@@ -33,6 +33,11 @@ return new class extends Migration
             $table->string('address');
             $table->string('pin_code', 6);
             $table->string('temporary_address');
+            $table->string('other1')->nullable();
+            $table->string('other2')->nullable();
+            $table->string('other3')->nullable();
+            $table->string('other4')->nullable();
+            $table->string('other5')->nullable();
             $table->timestamps();
         });
     }

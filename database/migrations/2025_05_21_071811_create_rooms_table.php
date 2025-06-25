@@ -20,7 +20,14 @@ return new class extends Migration
             $table->string('room_no');
             $table->string('room_type');
             $table->unsignedInteger('room_beds');
+            $table->integer('current_occupants')->default(0);
             $table->string('occupancy_status');
+            $table->json('hosteler_id')->nullable();
+            $table->string('other1')->nullable();
+            $table->string('other2')->nullable();
+            $table->string('other3')->nullable();
+            $table->string('other4')->nullable();
+            $table->string('other5')->nullable();
             $table->timestamps();
         });
     }

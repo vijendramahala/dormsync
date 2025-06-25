@@ -44,6 +44,11 @@ class ItemmasterController extends Controller
             'item_group' => 'required|string|max:255',
             'manufacturer' => 'required|string|max:255',
             'stock_qty' => 'required|integer|min:0',
+            'other1' => 'nullable|string|max:255',
+            'other2' => 'nullable|string|max:255',
+            'other3' => 'nullable|string|max:255',
+            'other4' => 'nullable|string|max:255',
+            'other5' => 'nullable|string|max:255',
         ];
     }
 
@@ -80,7 +85,12 @@ class ItemmasterController extends Controller
                 'item_name' => $request->item_name,
                 'item_group' => $request->item_group,
                 'manufacturer' => $request->manufacturer,
-                'stock_qty' => $request->stock_qty
+                'stock_qty' => $request->stock_qty,
+                'other1' => $request->other1,
+                'other2' => $request->other2,
+                'other3' => $request->other3,
+                'other4' => $request->other4,
+                'other5' => $request->other5,
             ]);
 
                 $item = $item->load(['licence', 'branch']);
@@ -131,7 +141,12 @@ class ItemmasterController extends Controller
                 'item_name' => $request->item_name,
                 'item_group' => $request->item_group,
                 'manufacturer' => $request->manufacturer,
-                'stock_qty' => $request->stock_qty
+                'stock_qty' => $request->stock_qty,
+                'other1' => $request->other1,
+                'other2' => $request->other2,
+                'other3' => $request->other3,
+                'other4' => $request->other4,
+                'other5' => $request->other5,
             ]);
 
                 $item = $item->load(['licence', 'branch']);

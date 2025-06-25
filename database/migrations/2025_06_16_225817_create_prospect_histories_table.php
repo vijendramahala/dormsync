@@ -11,16 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('branches', function (Blueprint $table) {
+        Schema::create('prospect_histories', function (Blueprint $table) {
             $table->id();
-            $table->string('licence_no');
-            $table->string('contact_no');
-            $table->string('name');
-            $table->string('branch_name');
-            $table->string('b_address');
-            $table->string('b_city');
-            $table->string('b_state');
-            $table->unsignedBigInteger('location_id')->nullable();
+            $table->foreignId('prospect_id')->constrained('prospects')->onDelete('cascade');
+            $table->unsignedBigInteger('updated_by')->nullable(); // user id
+            $table->json('old_data'); // Store full data before update
+            $table->string('prospect_status');
             $table->string('other1')->nullable();
             $table->string('other2')->nullable();
             $table->string('other3')->nullable();
@@ -35,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('branches');
+        Schema::dropIfExists('prospect_histories');
     }
 };
