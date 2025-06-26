@@ -22,7 +22,7 @@ class VisitorController extends Controller
         $branchid = Auth::user()->branch_id;
 
         $visitor = Visitor::with([
-            'licence:id,;icence_no',
+            'licence:id,licence_no',
             'branch:id,branch_name,b_city'
         ])
         ->where('licence_no', $licenceno)
@@ -43,17 +43,17 @@ class VisitorController extends Controller
             'branch_id' => 'nullable|exists:branches,id',
             'hosteler_details' => 'nullable|string|max:1000',
             'hosteler_id' => 'required|exists:admissionforms,student_id',
-            'admission_date' => 'required|date',
+            'admission_date' => 'required|date_format:d/m/Y',
             'hosteler_name' => 'required|string|max:255',
             'course_name' => 'required|string|max:255',
             'father_name' => 'required|string|max:255',
-            'visiting_date' => 'required|date',
+            'visiting_date' => 'required|date_format:d/m/Y',
             'visitor_name' => 'required|string|max:255',
             'relation' => 'required|string|max:100',
             'contact' => 'required|string|regex:/^[0-9]{10}$/',
             'aadhar_no' => 'required|string|size:12|regex:/^[0-9]{12}$/',
             'purpose_of_visit' => 'required|string|max:500',
-            'date_of_leave' => 'nullable|date|after_or_equal:visiting_date',
+            'date_of_leave' => 'nullable|after_or_equal:visiting_date|date_format:d/m/Y',
             'visitor_document' => 'nullable|file|mimes:jpeg,png,pdf,docx|max:2048',
             'other1' => 'nullable|string|max:255',
             'other2' => 'nullable|string|max:255',
@@ -64,7 +64,7 @@ class VisitorController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()->first()], 422);
+            return response()->json(['status' =>false, 'message' => $validator->errors()->first()], 200);
         }
         $licence = Licence::where('licence_no', $request->licence_no)->first();
             if (!$licence) {
@@ -138,17 +138,17 @@ class VisitorController extends Controller
             'branch_id' => 'nullable|exists:branches,id',
             'hosteler_details' => 'nullable|string|max:1000',
             'hosteler_id' => 'required|exists:admissionforms,student_id',
-            'admission_date' => 'required|date',
+            'admission_date' => 'required|date_format:d/m/Y',
             'hosteler_name' => 'required|string|max:255',
             'course_name' => 'required|string|max:255',
             'father_name' => 'required|string|max:255',
-            'visiting_date' => 'required|date',
+            'visiting_date' => 'required|date_format:d/m/Y',
             'visitor_name' => 'required|string|max:255',
             'relation' => 'required|string|max:100',
             'contact' => 'required|string|regex:/^[0-9]{10}$/',
             'aadhar_no' => 'required|string|size:12|regex:/^[0-9]{12}$/',
             'purpose_of_visit' => 'required|string|max:500',
-            'date_of_leave' => 'nullable|date|after_or_equal:visiting_date',
+            'date_of_leave' => 'nullable|after_or_equal:visiting_date|date_format:d/m/Y',
             'visitor_document' => 'nullable|file|mimes:jpeg,png,pdf,docx|max:2048',
             'other1' => 'nullable|string|max:255',
             'other2' => 'nullable|string|max:255',
@@ -158,7 +158,7 @@ class VisitorController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()->first()], 422);
+            return response()->json(['status' => false, 'message' => $validator->errors()->first()], 200);
         }
         $licence = Licence::where('licence_no', $request->licence_no)->first();
             if (!$licence) {

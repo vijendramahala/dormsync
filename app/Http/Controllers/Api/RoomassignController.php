@@ -48,7 +48,6 @@ class RoomassignController extends Controller
             'floor_id'         => 'required|exists:floors,id',
             'room_type'        => 'required|in:A/C,Non-A/C',
             'room_no'          => 'required|string|max:50',
-            // 'active_status' => 'required',
             'other1' => 'nullable|string|max:255',
             'other2' => 'nullable|string|max:255',
             'other3' => 'nullable|string|max:255',
@@ -60,7 +59,11 @@ class RoomassignController extends Controller
             return response()->json(['status' => false, 'message' => $validator->errors()->first()], 200);
         }
 
-$admissionform = Admissionform::where('student_id', $request->hosteler_id)->first();
+    $admissionform = Admissionform::where('student_id', $request->hosteler_id)->first();
+    if($admissionform->active_status == 1){
+        $admissionform->active_status = 0;
+        $admissionform->save();
+    }
 
         $room = Room::where([
             'licence_no'   => $request->licence_no,

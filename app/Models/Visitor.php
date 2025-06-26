@@ -48,11 +48,6 @@ class Visitor extends Model implements HasMedia
     //Get code 
     //git pull    - to get latest data from repo
 
-    protected $casts = [
-        'admission_date' => 'date',
-        'visiting_date' => 'date',
-        'date_of_leave' => 'datetime',
-    ];
 
      public function licence()
     {

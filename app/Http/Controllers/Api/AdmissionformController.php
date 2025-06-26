@@ -11,6 +11,7 @@ use App\Models\Branch;
 use App\Models\Ledgermaster;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class AdmissionformController extends Controller
 {
@@ -37,35 +38,49 @@ class AdmissionformController extends Controller
         ], 200);
     }
 
-    public function activstatus()
+   public function activstatus(Request $request)
     {
-        try{
+        try {
             $licenceno = Auth::user()->licence_no;
             $branchid = Auth::user()->branch_id;
 
-            $admission = Admissionform::with([
-            'licence:id,licence_no',
-            'branch:id,branch_name,b_city',
-            'ledger:student_id,opening_balance,opening_type'
-        ])
-        ->where('licence_no', $licenceno)
-        ->where('branch_id', $branchid)
-        ->where('active_status', 1)
-        ->get();
+            $admissionQuery = Admissionform::with([
+                'licence:id,licence_no',
+                'branch:id,branch_name,b_city',
+                'ledger:student_id,opening_balance,opening_type'
+            ])
+            ->where('licence_no', $licenceno)
+            ->where('branch_id', $branchid)
+            ->where('active_status', 1);
 
-        return response()->json([
-            'status' => true,
-            'data' => $admission
-        ], 200);
+            // 📅 From Date Filter
+            if ($request->filled('from_date')) {
+                $fromDate = Carbon::createFromFormat('d/m/Y', $request->from_date)->format('Y-m-d');
+                $admissionQuery->whereRaw("STR_TO_DATE(admission_date, '%d/%m/%Y') >= ?", [$fromDate]);
+            }
 
-         } catch (\Exception $e){
+            // 📅 To Date Filter
+            if ($request->filled('to_date')) {
+                $toDate = Carbon::createFromFormat('d/m/Y', $request->to_date)->format('Y-m-d');
+                $admissionQuery->whereRaw("STR_TO_DATE(admission_date, '%d/%m/%Y') <= ?", [$toDate]);
+            }
+
+            $admissions = $admissionQuery->get();
+
+            return response()->json([
+                'status' => true,
+                'data' => $admissions
+            ], 200);
+
+        } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
                 'message' => 'Something went wrong',
-                'error' => $e->getmessage()
+                'error' => $e->getMessage()
             ], 500);
-         }
+        }
     }
+
 
     private function validation(){
 
